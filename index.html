@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potboy Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#e74c3c',
+                        'primary-dark': '#c0392b',
+                    },
+                    fontFamily: {
+                        'averia': ['"Averia Serif Libre"', 'serif'],
+                        'receipt': ['"Courier New"', 'Courier', 'monospace'],
+                    },
+                    backgroundImage: {
+                        'dashed-line': "url(\"data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='0' ry='0' stroke='black' stroke-width='2' stroke-dasharray='10%2c 10' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e\")",
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @font-face {
+            font-family: 'Averia Serif Libre';
+            src: url('./assets/fonts/AveriaSerifLibre-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Averia Serif Libre';
+            src: url('./assets/fonts/AveriaSerifLibre-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+        
+        .receipt-tear {
+            background-image: radial-gradient(circle at 10px 0, transparent 10px, white 11px);
+            background-size: 20px 20px;
+            background-repeat: repeat-x;
+            height: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-evenly h-[100svh] py-[5svh] w-screen overflow-hidden p-[1svh] bg-white text-[#333] font-averia select-none">
+
+    <div id="mainHeader" class="h-[15svh] flex justify-center items-center max-w-[90svw]">
+        <img src="./assets/potboy-aru.svg" alt="Potboy Aru" class="h-full w-auto object-contain max-h-full">
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col items-center justify-evenly w-full max-w-[90svw] relative">
+        
+        <!-- Default Character Image -->
+        <img id="characterImg" src="./assets/potboy.svg" alt="Potboy" class="h-[40svh] max-w-[90svw] object-contain">
+
+        <!-- Video Container -->
+        <div id="videoContainer" class="w-auto max-w-[90svw] h-[40svh] aspect-[4/3] bg-black rounded-2xl overflow-hidden relative hidden">
+            <video id="webcam" autoplay playsinline muted class="w-full h-full object-cover transform -scale-x-100"></video>
+            <div id="countdown" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8rem] text-white font-bold drop-shadow-md hidden pointer-events-none z-10 transition-opacity">3</div>
+            <!-- Processing Overlay -->
+            <div id="processingOverlay" class="absolute inset-0 bg-black/80 flex items-center justify-center z-20 hidden">
+                 <span class="text-white text-2xl font-bold animate-pulse">Processing image...</span>
+            </div>
+        </div>
+
+        <!-- Receipt Container -->
+        <div id="receiptContainer" class="hidden w-auto max-w-[320px] max-h-[70svh] overflow-y-auto bg-white shadow-2xl relative flex flex-col items-center">
+            <!-- Receipt Content -->
+            <div class="p-4 pb-2 text-center border-t-4 border-black w-full">
+                <h1 class="text-2xl font-bold font-averia mb-1">POT BOY ARU</h1>
+                <h2 class="text-xl italic font-averia mb-2">SAMPLE TEST</h2>
+                <p class="text-xs font-mono uppercase tracking-widest mb-4">COME HUNGRY!</p>
+                
+                <!-- Decorative Graphic (Placeholder using text/symbol if image unavailable, leveraging 'potboy' assets logic) -->
+                <div class="flex justify-center gap-2 mb-4">
+                    <img src="./assets/potboy.svg" class="h-12 w-auto grayscale contrast-200" alt="Icon">
+                    <img src="./assets/potboy.svg" class="h-12 w-auto grayscale contrast-200 transform -scale-x-100" alt="Icon">
+                </div>
+
+                <!-- Dashed Line -->
+                <div class="w-full border-t border-dashed border-black my-4"></div>
+
+                <!-- Processed Image Result -->
+                <div class="relative w-full aspect-[4/3] bg-gray-100 border-2 border-black transform -rotate-1 shadow-sm mb-4 overflow-hidden">
+                    <canvas id="receiptCanvas" class="w-full h-full object-cover"></canvas>
+                </div>
+                
+                <div class="text-left font-receipt text-[0.65rem] leading-tight space-y-1 mb-4">
+                   <div class="flex justify-between">
+                       <span>Your Cashier is: WEEJ</span>
+                       <span>PBA, # 02</span>
+                   </div>
+                   <div>DATE: <span id="receiptDate">FRIDAY, APRIL 4</span></div>
+                   <div>Hours: FRIDAY 12-7</div>
+                   <div>       SATURDAY 12-7</div>
+                   <div>       SUNDAY 1-6</div>
+                </div>
+
+                <!-- Dashed Line -->
+                 <div class="w-full border-t border-dashed border-black my-4"></div>
+
+                <div class="flex justify-between font-receipt text-xs font-bold mb-4">
+                    <span>NO</span>
+                    <span>RESULTS</span>
+                    <span>AMT</span>
+                </div>
+                
+                <div class="font-receipt text-xs text-left grid grid-cols-[20px_1fr_20px] gap-2 mb-6">
+                    <div>01</div><div>PLACEHOLDER</div><div class="text-right">$</div>
+                    <div>02</div><div>PLACEHOLDER</div><div class="text-right">$</div>
+                    <div>03</div><div>PLACEHOLDER</div><div class="text-right">$</div>
+                </div>
+
+                <div class="text-center font-averia text-lg font-bold">
+                    #We walk the talk,<br>
+                    not only talk the talk
+                </div>
+            </div>
+            
+            <div class="w-full border-t-2 border-black my-4"></div>
+             
+             <div class="text-center font-mono text-[0.6rem] tracking-[0.2em] mb-4">
+                 C&gt;O&gt;M&gt;E&gt;H&gt;U&gt;N&gt;G&gt;R&gt;Y
+             </div>
+             
+             <div class="text-center font-receipt text-[0.5rem] mb-6 px-4">
+                 <div class="font-bold mb-1">RSVP 0889-0992-9999</div>
+                 <div>Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela</div>
+             </div>
+             
+             <!-- Bottom Tear Effect -->
+             <div class="receipt-tear absolute -bottom-[10px] w-full"></div>
+        </div>
+
+
+        <!-- Controls -->
+        <div class="w-full flex flex-col items-center gap-[2svh] z-30">
+            <!-- Step 1: Auth -->
+            <div id="stepAuth" class="contents">
+                <input type="text" id="codeInput" placeholder="Please enter code..." oninput="this.value = this.value.toUpperCase()" class="border-2 mt-[4svh] border-primary rounded-lg text-xl w-full max-w-[90svw] md:max-w-[30svw] h-[8svh] text-center text-primary placeholder-primary/50 flex items-center justify-center outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                <button id="btnSubmit" class="bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 mt-[1svh]">Submit</button>
+            </div>
+
+            <!-- Step 2: Start -->
+            <button id="btnStart" class="hidden bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 mt-[1svh]">Start</button>
+
+            <!-- Step 3: Capture -->
+            <button id="btnCapture" class="hidden bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Capture</button>
+            <div id="captureHint" class="hidden text-primary font-bold animate-pulse text-lg">Please look at the camera...</div>
+
+            <!-- Step 5: Done -->
+            <button id="btnDone" class="hidden bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 mt-[2svh]">Done</button>
+        </div>
+    </div>
+
+    <script>
+        // State elements
+        const characterImg = document.getElementById('characterImg');
+        const videoContainer = document.getElementById('videoContainer');
+        const webcam = document.getElementById('webcam');
+        const receiptCanvas = document.getElementById('receiptCanvas'); // Use this for the receipt
+        const countdownEl = document.getElementById('countdown');
+        const processingOverlay = document.getElementById('processingOverlay');
+        const receiptContainer = document.getElementById('receiptContainer');
+        const mainHeader = document.getElementById('mainHeader');
+
+        const stepAuth = document.getElementById('stepAuth');
+        const codeInput = document.getElementById('codeInput');
+        const btnSubmit = document.getElementById('btnSubmit');
+        
+        const btnStart = document.getElementById('btnStart');
+        const btnCapture = document.getElementById('btnCapture');
+        const captureHint = document.getElementById('captureHint');
+        const btnDone = document.getElementById('btnDone');
+        const receiptDate = document.getElementById('receiptDate');
+
+        let stream = null;
+
+        // Set Date
+        const now = new Date();
+        const options = { weekday: 'long', month: 'long', day: 'numeric' };
+        receiptDate.textContent = now.toLocaleDateString('en-US', options).toUpperCase();
+
+        // Step 1: Submit Code
+        btnSubmit.addEventListener('click', () => {
+            const code = codeInput.value.trim().toUpperCase();
+            if (code === 'POTBOY') {
+                goToStart();
+            } else {
+                alert('Invalid Code (Try "POTBOY")');
+                codeInput.classList.remove('border-primary');
+                codeInput.classList.add('border-black');
+                setTimeout(() => {
+                    codeInput.classList.remove('border-black');
+                    codeInput.classList.add('border-primary');
+                }, 500);
+            }
+        });
+
+        function goToStart() {
+            stepAuth.classList.remove('contents');
+            stepAuth.classList.add('hidden');
+            
+            btnStart.classList.remove('hidden');
+            btnStart.classList.add('flex');
+        }
+
+        // Step 2: Start -> Preview
+        btnStart.addEventListener('click', async () => {
+             btnStart.classList.add('hidden');
+             btnStart.classList.remove('flex');
+
+             characterImg.classList.add('hidden');
+             
+             videoContainer.classList.remove('hidden');
+             videoContainer.classList.add('block');
+             
+             try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "user" } } });
+                 webcam.srcObject = stream;
+                 
+                 btnCapture.classList.remove('hidden');
+                 btnCapture.classList.add('flex');
+             } catch (e) {
+                 alert('Could not access webcam: ' + e.message);
+                 location.reload();
+             }
+        });
+
+        // Step 3: Capture -> Countdown
+        btnCapture.addEventListener('click', () => {
+            // Update button state
+            btnCapture.disabled = true;
+            btnCapture.classList.add('hidden'); // Hide button as requested? User said "don't hide button" but then "show but disabled".
+            // Actually user said: "don't hide the button. show but disabled and written "Please look at the camera...""
+            btnCapture.classList.remove('hidden');
+            btnCapture.classList.add('flex');
+            btnCapture.textContent = "Please look at the camera...";
+            
+            startCountdown();
+        });
+
+        function startCountdown() {
+            let count = 3;
+            countdownEl.textContent = count;
+            countdownEl.classList.remove('hidden');
+            countdownEl.classList.add('block');
+            
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownEl.textContent = count;
+                } else {
+                    clearInterval(interval);
+                    countdownEl.classList.add('hidden');
+                    countdownEl.classList.remove('block');
+                    
+                    // Show processing
+                    showProcessing();
+                }
+            }, 1000);
+        }
+        
+        function showProcessing() {
+            processingOverlay.classList.remove('hidden');
+            
+            // Simulate processing time
+            setTimeout(() => {
+                processAndShowReceipt();
+            }, 1500);
+        }
+
+        function processAndShowReceipt() {
+             // 1. Capture and Process Image
+            receiptCanvas.width = 300; // Low res for "receipt" feel
+            receiptCanvas.height = 225; // 4:3
+            const ctx = receiptCanvas.getContext('2d');
+            
+            // Flip
+            ctx.translate(receiptCanvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(webcam, 0, 0, receiptCanvas.width, receiptCanvas.height);
+            
+            // Get data
+            let imageData = ctx.getImageData(0, 0, receiptCanvas.width, receiptCanvas.height);
+            let data = imageData.data;
+            
+            // High contrast B&W Thresholding
+            const threshold = 85; 
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                // Grayscale luminance
+                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                const bin = gray > threshold ? 255 : 0;
+                
+                data[i] = bin;     // R
+                data[i + 1] = bin; // G
+                data[i + 2] = bin; // B
+            }
+            ctx.putImageData(imageData, 0, 0);
+
+            // 2. Hide Video / Show Receipt
+            videoContainer.classList.add('hidden');
+            videoContainer.classList.remove('block');
+            mainHeader.classList.add('hidden'); // Hide main header to focus on receipt? Or keep it? User didn't specify, but receipt usually standalone. Let's hide to clean up.
+            mainHeader.classList.remove('flex');
+            
+            receiptContainer.classList.remove('hidden');
+            receiptContainer.classList.add('flex');
+            
+            btnCapture.classList.add('hidden');
+            btnCapture.classList.remove('flex');
+            
+            btnDone.classList.remove('hidden');
+            btnDone.classList.add('flex');
+            
+            // Stop stream
+            if(stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        // Step 5: Done -> Reset
+        btnDone.addEventListener('click', () => {
+             location.reload(); // Simplest reset to ensure clean state
+        });
+
+    </script>
+</body>
+</html>
