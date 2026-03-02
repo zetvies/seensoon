@@ -14,8 +14,7 @@ ExecStartPre=-/usr/bin/fuser -k 5001/tcp
 ExecStartPre=-/bin/sleep 2
 
 # Run client with WS server connection
-# Set WS_SERVER_URL in .env or override here
-ExecStart=/home/pi/thermalPrinterRaspy/venv/bin/python -u /home/pi/thermalPrinterRaspy/client.py
+ExecStart=/home/pi/thermalPrinterRaspy/venv/bin/python -u /home/pi/thermalPrinterRaspy/client.py --server wss://potboy-demo.onrender.com/ws/pi
 
 # Cleanup on stop
 ExecStopPost=-/usr/bin/pkill -9 rpicam

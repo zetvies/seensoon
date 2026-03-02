@@ -122,7 +122,6 @@ def generate_frames():
         cmd = [
             'rpicam-vid', '-t', '0', '--nopreview',
             '--camera', str(RPICAM_INDEX),
-            '--width', '640', '--height', '480',
             '--framerate', '15', '--codec', 'mjpeg', '-o', '-'
         ]
 

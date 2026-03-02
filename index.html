@@ -74,7 +74,7 @@
 
         <!-- Retake / Print buttons (above receipt) -->
         <div id="btnRow" class="hidden w-full max-w-[95svw] md:max-w-[420px] flex gap-3 mb-4">
-            <button id="btnRetake" class="flex-1 bg-primary/60 text-white border-none rounded-full text-xl font-bold cursor-pointer hover:bg-primary h-[7svh] flex items-center justify-center transition-transform active:scale-95">Retake</button>
+            <button id="btnRetake" class="flex-1 bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Retake</button>
             <button id="btnPrint" class="flex-1 bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Print</button>
         </div>
 
@@ -412,27 +412,39 @@
 
         // Print receipt
         btnPrint.addEventListener('click', async () => {
+            console.log('[PRINT] Button clicked');
             btnPrint.disabled = true;
             btnPrint.textContent = 'Printing...';
             
+            if (typeof html2canvas === 'undefined') {
+                alert('html2canvas not loaded! Check internet connection.');
+                btnPrint.disabled = false;
+                btnPrint.textContent = 'Print';
+                return;
+            }
+            
             try {
+                console.log('[PRINT] Capturing receipt...');
                 const receiptEl = document.getElementById('receiptContainer');
                 const canvas = await html2canvas(receiptEl, {
                     backgroundColor: '#ffffff',
                     scale: 3,
                     useCORS: true
                 });
+                console.log('[PRINT] Canvas captured, size:', canvas.width, 'x', canvas.height);
                 const dataUrl = canvas.toDataURL('image/png');
+                console.log('[PRINT] Sending to server, data length:', dataUrl.length);
                 
                 const response = await fetch('/api/print', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ image: dataUrl })
                 });
+                console.log('[PRINT] Response status:', response.status);
                 const result = await response.json();
+                console.log('[PRINT] Result:', result);
                 
                 if (result.success) {
-                    // Hide buttons, show thank you
                     btnRow.classList.add('hidden');
                     thankYouMsg.classList.remove('hidden');
                 } else {
@@ -441,6 +453,7 @@
                     alert('Print error: ' + result.error);
                 }
             } catch (e) {
+                console.error('[PRINT] Error:', e);
                 btnPrint.textContent = 'Print Failed';
                 btnPrint.disabled = false;
                 alert('Error: ' + e.message);
