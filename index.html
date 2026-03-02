@@ -429,33 +429,104 @@
                 tempImg.style.objectFit = 'cover';
                 receiptCanvas.parentNode.replaceChild(tempImg, receiptCanvas);
                 
-                if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] Starting html2canvas...'}));
+                if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] Generating receipt with native Canvas...'}));
                 
-                // Timeout wrapper — html2canvas can hang on some deployments
-                let dataUrl;
-                try {
-                    const canvas = await Promise.race([
-                        html2canvas(receiptEl, {
-                            backgroundColor: '#ffffff',
-                            scale: 3,
-                            useCORS: true,
-                            allowTaint: true,
-                            logging: false
-                        }),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
-                    ]);
-                    console.log('[PRINT] html2canvas done:', canvas.width, 'x', canvas.height);
-                    if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] html2canvas done: ' + canvas.width + 'x' + canvas.height}));
-                    dataUrl = canvas.toDataURL('image/png');
-                } catch (timeoutErr) {
-                    console.warn('[PRINT] html2canvas timed out, sending photo only');
-                    if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] html2canvas TIMED OUT, sending photo only'}));
-                    // Fallback: just send the photo canvas
-                    dataUrl = canvasDataUrl;
-                }
+                // --- CUSTOM CANVAS DRAWING ---
+                // We create a temporary canvas to draw the entire receipt manually
+                // This bypasses all html2canvas hanging issues.
+                const rCanvas = document.createElement('canvas');
+                rCanvas.width = 420; // Match CSS width
+                rCanvas.height = 840; // Increased to fit all content cleanly
+                const ctx = rCanvas.getContext('2d');
                 
-                // Restore canvas
-                tempImg.parentNode.replaceChild(receiptCanvas, tempImg);
+                // White background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, rCanvas.width, rCanvas.height);
+                
+                // Border top
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(20, 20, 380, 4);
+                
+                // Text settings
+                ctx.textAlign = 'center';
+                
+                // Header
+                ctx.font = 'bold 36px "Averia Serif Libre", serif'; 
+                ctx.fillText('POT BOY ARU', 210, 60);
+                
+                ctx.font = 'bold 24px "Averia Serif Libre", serif';
+                ctx.font = 'italic ' + ctx.font; // Make it italic
+                ctx.fillText('SAMPLE TEST', 210, 95);
+                
+                ctx.font = 'bold 16px monospace';
+                ctx.fillText('C O M E   H U N G R Y !', 210, 125);
+                
+                // Dashed Line
+                const drawDashedLine = (y) => {
+                    ctx.beginPath();
+                    ctx.setLineDash([10, 10]);
+                    ctx.moveTo(20, y);
+                    ctx.lineTo(400, y);
+                    ctx.stroke();
+                    ctx.setLineDash([]); // Reset
+                };
+                drawDashedLine(150);
+                
+                // The Photo
+                // receiptCanvas is 300x225. Let's draw it centered
+                // Wait, it should be drawn with a solid border
+                ctx.lineWidth = 2;
+                ctx.strokeRect(59, 169, 302, 227);
+                ctx.drawImage(receiptCanvas, 60, 170, 300, 225);
+                
+                // Date & Cashier
+                ctx.textAlign = 'left';
+                ctx.font = 'bold 16px "Averia Serif Libre", serif';
+                ctx.fillText('Your Cashier is: WEEJ         PBA, # 02', 40, 430);
+                
+                const dateText = document.getElementById('receiptDate').innerText;
+                ctx.fillText('DATE: ' + dateText, 40, 455);
+                ctx.fillText('Hours: FRIDAY 12-7', 40, 480);
+                ctx.fillText('       SATURDAY 12-7', 40, 500);
+                ctx.fillText('       SUNDAY 1-6', 40, 520);
+                
+                drawDashedLine(545);
+                
+                // Results Table
+                ctx.font = 'bold 16px "Averia Serif Libre", serif';
+                ctx.fillText('NO', 30, 575);
+                ctx.textAlign = 'center';
+                ctx.fillText('RESULTS', 210, 575);
+                ctx.textAlign = 'right';
+                ctx.fillText('AMT', 390, 575);
+                
+                ctx.textAlign = 'left';
+                ctx.font = '14px monospace';
+                ctx.fillText('01  PLACEHOLDER               $', 30, 600);
+                ctx.fillText('02  PLACEHOLDER               $', 30, 620);
+                ctx.fillText('03  PLACEHOLDER               $', 30, 640);
+                
+                // Tagline
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 20px "Averia Serif Libre", serif';
+                ctx.fillText('#We walk the talk,', 210, 680);
+                ctx.fillText('not only talk the talk', 210, 705);
+                
+                // Footer separator
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(20, 725, 380, 2);
+                
+                ctx.font = 'bold 14px monospace';
+                ctx.fillText('C > O > M > E > H > U > N > G > R > Y', 210, 755);
+                
+                ctx.font = 'bold 12px "Averia Serif Libre", serif';
+                ctx.fillText('RSVP 0889-0992-9999', 210, 785);
+                ctx.font = '12px "Averia Serif Libre", serif';
+                ctx.fillText('Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela', 210, 805);
+                // --- END CUSTOM DRAWING ---
+                
+                const dataUrl = rCanvas.toDataURL('image/png');
+                if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] Native Canvas generated, size: ' + dataUrl.length}));
                 
                 console.log('[PRINT] Sending to server, size:', dataUrl.length);
                 if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] Sending to server, size: ' + dataUrl.length}));
