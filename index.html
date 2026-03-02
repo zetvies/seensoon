@@ -415,6 +415,7 @@
             console.log('[PRINT] Button clicked');
             btnPrint.disabled = true;
             btnPrint.textContent = 'Printing...';
+            if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] Button clicked'}));
             
             try {
                 const receiptEl = document.getElementById('receiptContainer');
@@ -428,21 +429,42 @@
                 tempImg.style.objectFit = 'cover';
                 receiptCanvas.parentNode.replaceChild(tempImg, receiptCanvas);
                 
-                const canvas = await html2canvas(receiptEl, {
-                    backgroundColor: '#ffffff',
-                    scale: 3,
-                    useCORS: true
-                });
+                if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] Starting html2canvas...'}));
+                
+                // Timeout wrapper — html2canvas can hang on some deployments
+                let dataUrl;
+                try {
+                    const canvas = await Promise.race([
+                        html2canvas(receiptEl, {
+                            backgroundColor: '#ffffff',
+                            scale: 3,
+                            useCORS: true,
+                            allowTaint: true,
+                            logging: false
+                        }),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+                    ]);
+                    console.log('[PRINT] html2canvas done:', canvas.width, 'x', canvas.height);
+                    if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] html2canvas done: ' + canvas.width + 'x' + canvas.height}));
+                    dataUrl = canvas.toDataURL('image/png');
+                } catch (timeoutErr) {
+                    console.warn('[PRINT] html2canvas timed out, sending photo only');
+                    if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] html2canvas TIMED OUT, sending photo only'}));
+                    // Fallback: just send the photo canvas
+                    dataUrl = canvasDataUrl;
+                }
                 
                 // Restore canvas
                 tempImg.parentNode.replaceChild(receiptCanvas, tempImg);
-                const dataUrl = canvas.toDataURL('image/png');
                 
+                console.log('[PRINT] Sending to server, size:', dataUrl.length);
+                if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'log', msg: '[PRINT] Sending to server, size: ' + dataUrl.length}));
                 const response = await fetch('/api/print', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ image: dataUrl })
                 });
+                console.log('[PRINT] Response:', response.status);
                 const result = await response.json();
                 
                 if (result.success) {

@@ -161,6 +161,25 @@ async def pi_websocket(websocket: WebSocket):
         pi.latest_frame = None
 
 # ================================
+# BROWSER WEBSOCKET ENDPOINT
+# ================================
+
+@app.websocket("/ws")
+async def browser_websocket(websocket: WebSocket):
+    """Browser connects here for real-time updates."""
+    await browser_manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_json()
+            # Print log messages from browser to server console
+            if data.get("type") == "log":
+                print(f"[BROWSER] {data.get('msg', '')}")
+    except WebSocketDisconnect:
+        browser_manager.disconnect(websocket)
+    except Exception:
+        browser_manager.disconnect(websocket)
+
+# ================================
 # API ENDPOINTS (browser calls these)
 # ================================
 
