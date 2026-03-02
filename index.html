@@ -88,6 +88,18 @@
                 class="flex-1 bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Print</button>
         </div>
 
+        <!-- Darkness Threshold Slider -->
+        <div id="thresholdControl" class="hidden w-full max-w-[95svw] md:max-w-[420px] flex-col items-center px-4 mb-6">
+            <label for="thresholdSlider" class="block text-sm font-bold mb-2">DARKNESS THRESHOLD</label>
+            <input type="range" id="thresholdSlider" min="0" max="255" value="30" 
+                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
+            <div class="flex justify-between w-full text-xs font-bold mt-1">
+                <span>LIGHTER</span>
+                <span id="thresholdValue">30</span>
+                <span>DARKER</span>
+            </div>
+        </div>
+
         <!-- Thank you message (shown after print) -->
         <div id="thankYouMsg" class="hidden text-center font-averia text-2xl font-bold text-primary mb-4">Thank you for
             coming!</div>
@@ -220,6 +232,7 @@
 
         let ws = null;
         let previewActive = false;
+        let originalFrameData = null; // Store raw capture for re-processing
 
         // WebSocket Setup
         function connectWS() {
@@ -372,23 +385,11 @@
             ctx.rotate(Math.PI);
             ctx.drawImage(mjpegStream, 0, 0, w, h);
 
-            // Apply threshold (simple black/white)
-            let imageData = ctx.getImageData(0, 0, w, h);
-            let data = imageData.data;
-            let outputData = new Uint8ClampedArray(data);
-
-            const darknessThreshold = 200;
-
-            for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                    const i = (y * w + x) * 4;
-                    const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-                    const val = gray < darknessThreshold ? 0 : 255;
-                    outputData[i] = val; outputData[i + 1] = val; outputData[i + 2] = val; outputData[i + 3] = 255;
-                }
-            }
-            imageData.data.set(outputData);
-            ctx.putImageData(imageData, 0, 0);
+            // Store original pixels so we can re-threshold without losing detail
+            originalFrameData = ctx.getImageData(0, 0, w, h);
+            
+            // Initial render
+            applyThreshold();
 
             // 2. Clear UI
             videoContainer.classList.add('hidden');
@@ -398,6 +399,8 @@
             btnCapture.classList.add('hidden');
             btnRow.classList.remove('hidden');
             btnRow.classList.add('flex');
+            document.getElementById('thresholdControl').classList.remove('hidden');
+            document.getElementById('thresholdControl').classList.add('flex');
             processingOverlay.classList.add('hidden');
 
             // Make page scrollable so receipt is fully visible
@@ -405,11 +408,63 @@
             document.body.classList.add('overflow-y-auto', 'min-h-[100svh]', 'h-auto');
         }
 
+        const thresholdSlider = document.getElementById('thresholdSlider');
+        const thresholdValueLabel = document.getElementById('thresholdValue');
+
+        thresholdSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            thresholdValueLabel.textContent = val;
+            applyThreshold();
+        });
+
+        function applyThreshold() {
+            if (!originalFrameData) return;
+            
+            const ctx = receiptCanvas.getContext('2d');
+            const w = receiptCanvas.width;
+            const h = receiptCanvas.height;
+            const threshold = parseInt(thresholdSlider.value);
+
+            let imageData = new ImageData(
+                new Uint8ClampedArray(originalFrameData.data),
+                originalFrameData.width,
+                originalFrameData.height
+            );
+            let data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const a = data[i + 3];
+
+                // If pixel is fully transparent (alpha=0), treat it as white
+                if (a === 0) {
+                    data[i] = 255;
+                    data[i+1] = 255;
+                    data[i+2] = 255;
+                    data[i+3] = 255;
+                    continue;
+                }
+
+                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                const val = gray < threshold ? 0 : 255;
+                
+                data[i] = val;
+                data[i + 1] = val;
+                data[i + 2] = val;
+                data[i + 3] = 255;
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+
         // Retake — go back to camera capture
         btnRetake.addEventListener('click', async () => {
             // Hide receipt and buttons
             receiptContainer.classList.add('hidden');
             btnRow.classList.add('hidden');
+            document.getElementById('thresholdControl').classList.add('hidden');
             thankYouMsg.classList.add('hidden');
 
             // Reset body scroll
@@ -566,6 +621,7 @@
 
                 if (result.success) {
                     btnRow.classList.add('hidden');
+                    document.getElementById('thresholdControl').classList.add('hidden');
                     thankYouMsg.classList.remove('hidden');
                 } else {
                     btnPrint.textContent = 'Print Failed';
