@@ -1,30 +1,83 @@
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
-import aiohttp
 import asyncio
 import json
+import uuid
 from dotenv import load_dotenv
-from typing import List
+from typing import List, Optional
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-# Load surroundings
+# Load env
 base_path = os.path.dirname(os.path.abspath(__file__))
-# Try to load .env from Server folder if not in Final
 load_dotenv(os.path.join(base_path, ".env"))
 load_dotenv(os.path.join(base_path, "..", "Server", ".env"))
 
 app = FastAPI()
 
-# Config
-PI_IP = os.getenv("RASPBERRY_PI_IP", "100.118.120.26")
-PI_PORT = os.getenv("RASPBERRY_PI_PORT", "5001")
-PI_URL = f"http://{PI_IP}:{PI_PORT}"
+# ================================
+# PI CONNECTION (reverse WebSocket)
+# ================================
 
-# Global state for WebSockets
-class ConnectionManager:
+class PiConnection:
+    """Manages the WebSocket connection from the Pi."""
+    def __init__(self):
+        self.ws: Optional[WebSocket] = None
+        self.pending_requests: dict = {}  # id -> asyncio.Future
+        self.latest_frame: Optional[bytes] = None
+        self.frame_event = asyncio.Event()
+        self.streaming = False
+
+    @property
+    def connected(self):
+        return self.ws is not None
+
+    async def send_command(self, action: str, data: dict = None, timeout: float = 30) -> dict:
+        """Send a command to Pi and wait for response."""
+        if not self.connected:
+            return {"success": False, "error": "Pi not connected"}
+
+        request_id = str(uuid.uuid4())[:8]
+        msg = {"id": request_id, "action": action}
+        if data:
+            msg.update(data)
+
+        # Create a future to await the response
+        loop = asyncio.get_event_loop()
+        future = loop.create_future()
+        self.pending_requests[request_id] = future
+
+        try:
+            await self.ws.send_json(msg)
+            result = await asyncio.wait_for(future, timeout=timeout)
+            return result
+        except asyncio.TimeoutError:
+            return {"success": False, "error": "Pi timeout"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+        finally:
+            self.pending_requests.pop(request_id, None)
+
+    def resolve_request(self, request_id: str, data: dict):
+        """Resolve a pending request with response data."""
+        future = self.pending_requests.get(request_id)
+        if future and not future.done():
+            future.set_result(data)
+
+    def update_frame(self, frame_data: bytes):
+        """Update the latest frame from Pi's stream."""
+        self.latest_frame = frame_data
+        self.frame_event.set()
+
+pi = PiConnection()
+
+# ================================
+# BROWSER WEBSOCKET MANAGER
+# ================================
+
+class BrowserManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 
@@ -33,15 +86,22 @@ class ConnectionManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
 
     async def broadcast(self, message: dict):
-        for connection in self.active_connections:
-            await connection.send_json(message)
+        for conn in self.active_connections:
+            try:
+                await conn.send_json(message)
+            except:
+                pass
 
-manager = ConnectionManager()
+browser_manager = BrowserManager()
 
-# Paths
+# ================================
+# STATIC FILES
+# ================================
+
 assets_path = os.path.join(base_path, "assets")
 if os.path.exists(assets_path):
     app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
@@ -50,125 +110,126 @@ if os.path.exists(assets_path):
 async def read_index():
     return FileResponse(os.path.join(base_path, "index.html"))
 
-# --- PI PROXY ENDPOINTS ---
+# ================================
+# PI WEBSOCKET ENDPOINT
+# ================================
+
+@app.websocket("/ws/pi")
+async def pi_websocket(websocket: WebSocket):
+    """Pi connects here. Receives commands, sends responses + stream frames."""
+    await websocket.accept()
+    pi.ws = websocket
+    pi.streaming = False
+    print("[PI] Connected!")
+
+    try:
+        while True:
+            message = await websocket.receive()
+
+            if message.get("type") == "websocket.receive":
+                # Binary = MJPEG frame
+                if "bytes" in message and message["bytes"]:
+                    pi.update_frame(message["bytes"])
+                # Text = JSON response
+                elif "text" in message and message["text"]:
+                    try:
+                        data = json.loads(message["text"])
+                        request_id = data.get("id")
+                        if request_id:
+                            pi.resolve_request(request_id, data)
+                        # Handle special events (broadcast to browsers)
+                        if data.get("event"):
+                            await browser_manager.broadcast(data)
+                    except json.JSONDecodeError:
+                        pass
+    except WebSocketDisconnect:
+        print("[PI] Disconnected")
+    except Exception as e:
+        print(f"[PI] Error: {e}")
+    finally:
+        pi.ws = None
+        pi.streaming = False
+        pi.latest_frame = None
+
+# ================================
+# API ENDPOINTS (browser calls these)
+# ================================
+
+@app.get("/api/pi/status")
+async def pi_status():
+    """Check if Pi is connected."""
+    return {"connected": pi.connected}
 
 @app.post("/api/preview/start")
-async def proxy_preview_start():
-    print(f"▶️ Preview start requested → {PI_URL}/preview/start")
-    async with aiohttp.ClientSession() as session:
-        # Always stop first to kill any lingering rpicam process
-        try:
-            await session.post(f"{PI_URL}/preview/stop", timeout=aiohttp.ClientTimeout(total=3))
-            print("⏹️ Stopped old preview first")
-            await asyncio.sleep(1)  # Give camera time to release
-        except:
-            pass
-        
-        try:
-            async with session.post(f"{PI_URL}/preview/start", timeout=aiohttp.ClientTimeout(total=5)) as resp:
-                data = await resp.json()
-                if data.get("success"):
-                    print("✅ Preview started successfully")
-                    return {"success": True, "stream_url": "/api/stream"}
-                print(f"❌ Preview start failed: {data.get('error')}")
-                return {"success": False, "error": data.get("error")}
-        except Exception as e:
-            print(f"❌ Preview start error: {e}")
-            return {"success": False, "error": str(e)}
+async def api_preview_start():
+    print("[API] Preview start")
+    result = await pi.send_command("preview_start", timeout=10)
+    if result.get("success"):
+        pi.streaming = True
+        return {"success": True, "stream_url": "/api/stream"}
+    return result
 
 @app.post("/api/preview/stop")
-async def proxy_preview_stop():
-    print("⏹️ Preview stop requested")
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(f"{PI_URL}/preview/stop", timeout=5) as resp:
-                print("✅ Preview stopped")
-                return await resp.json()
-        except Exception as e:
-            print(f"❌ Preview stop error: {e}")
-            return {"success": False, "error": str(e)}
+async def api_preview_stop():
+    print("[API] Preview stop")
+    pi.streaming = False
+    return await pi.send_command("preview_stop", timeout=5)
 
 @app.get("/api/stream")
-async def proxy_stream(request: Request):
-    print(f"📹 Stream proxy connecting to {PI_URL}/stream")
-    async def stream_gen():
-        timeout = aiohttp.ClientTimeout(total=None, sock_read=60)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
+async def api_stream():
+    """Serve MJPEG stream from Pi's frames pushed over WebSocket."""
+    print("[STREAM] Browser connected")
+
+    async def generate():
+        while pi.connected and pi.streaming:
+            pi.frame_event.clear()
             try:
-                async with session.get(f"{PI_URL}/stream") as resp:
-                    print(f"📹 Stream connected (status: {resp.status})")
-                    chunk_count = 0
-                    async for chunk in resp.content.iter_any():
-                        chunk_count += 1
-                        if chunk_count == 1:
-                            print(f"📹 First chunk received ({len(chunk)} bytes)")
-                        elif chunk_count % 200 == 0:
-                            print(f"📹 Streamed {chunk_count} chunks...")
-                        yield chunk
-                    print(f"📹 Stream ended after {chunk_count} chunks")
-            except asyncio.CancelledError:
-                print("📹 Stream: client disconnected")
-            except Exception as e:
-                print(f"❌ Stream error: {e}")
+                await asyncio.wait_for(pi.frame_event.wait(), timeout=5)
+            except asyncio.TimeoutError:
+                continue
+
+            if pi.latest_frame:
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' +
+                       pi.latest_frame + b'\r\n')
+        print("[STREAM] Ended")
 
     return StreamingResponse(
-        stream_gen(),
+        generate(),
         media_type="multipart/x-mixed-replace; boundary=frame"
     )
 
 @app.post("/api/capture")
-async def proxy_capture():
-    print(f"📷 Capture triggered → {PI_URL}/capture")
-    async with aiohttp.ClientSession() as session:
-        try:
-            # Capture can take a while (countdown + processing)
-            async with session.post(f"{PI_URL}/capture", timeout=aiohttp.ClientTimeout(total=60)) as resp:
-                result = await resp.json()
-                print(f"📷 Capture result: {result}")
-                return result
-        except Exception as e:
-            print(f"❌ Capture error: {e}")
-            return {"success": False, "error": str(e)}
+async def api_capture():
+    print("[API] Capture")
+    return await pi.send_command("capture", timeout=30)
 
 @app.post("/api/print")
-async def proxy_print(request: Request):
-    """Forward receipt image to Pi for thermal printing."""
-    print(f"🖨️ Print requested → {PI_URL}/print")
+async def api_print(request: Request):
+    print("[API] Print")
     data = await request.json()
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(
-                f"{PI_URL}/print",
-                json=data,
-                timeout=aiohttp.ClientTimeout(total=30)
-            ) as resp:
-                result = await resp.json()
-                print(f"🖨️ Print result: {result}")
-                return result
-        except Exception as e:
-            print(f"❌ Print error: {e}")
-            return {"success": False, "error": str(e)}
+    return await pi.send_command("print", data={"image": data.get("image", "")}, timeout=30)
 
-@app.post("/api/notify")
-async def receive_notify(request: Request):
-    """Receive notifications from Pi and broadcast to browser."""
-    data = await request.json()
-    await manager.broadcast(data)
-    return {"success": True}
+# ================================
+# BROWSER WEBSOCKET
+# ================================
 
-# --- WEBSOCKET FOR BROWSER ---
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
+    await browser_manager.connect(websocket)
     try:
         while True:
-            # Keep connection alive
             await websocket.receive_text()
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        browser_manager.disconnect(websocket)
+
+# ================================
+# MAIN
+# ================================
 
 if __name__ == "__main__":
-    print(f"Potboy Final Server starting...")
-    print(f"Target Pi: {PI_URL}")
-    print(f"Local URL: http://localhost:8000")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", "8000"))
+    print(f"Potboy Server starting on port {port}...")
+    print(f"Local URL: http://localhost:{port}")
+    print(f"Pi should connect to: ws://YOUR_IP:{port}/ws/pi")
+    uvicorn.run(app, host="0.0.0.0", port=port)

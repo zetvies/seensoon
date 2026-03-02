@@ -72,6 +72,15 @@
             </div>
         </div>
 
+        <!-- Retake / Print buttons (above receipt) -->
+        <div id="btnRow" class="hidden w-full max-w-[95svw] md:max-w-[420px] flex gap-3 mb-4">
+            <button id="btnRetake" class="flex-1 bg-primary/60 text-white border-none rounded-full text-xl font-bold cursor-pointer hover:bg-primary h-[7svh] flex items-center justify-center transition-transform active:scale-95">Retake</button>
+            <button id="btnPrint" class="flex-1 bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Print</button>
+        </div>
+
+        <!-- Thank you message (shown after print) -->
+        <div id="thankYouMsg" class="hidden text-center font-averia text-2xl font-bold text-primary mb-4">Thank you for coming!</div>
+
         <!-- Receipt Container -->
         <div id="receiptContainer" class="hidden w-[420px] max-w-[95svw] bg-white shadow-2xl relative flex flex-col items-center">
             <!-- Receipt Content -->
@@ -156,12 +165,6 @@
             <!-- Step 3: Capture -->
             <button id="btnCapture" class="hidden bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Capture</button>
             <div id="captureHint" class="hidden text-primary font-bold animate-pulse text-lg">Please look at the camera...</div>
-
-            <!-- Step 4: Print + Done side by side -->
-            <div id="btnRow" class="hidden w-full max-w-[90svw] md:max-w-[30svw] flex gap-3 mt-[2svh]">
-                <button id="btnPrint" class="flex-1 bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark h-[9svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Print</button>
-                <button id="btnDone" class="flex-1 bg-primary/60 text-white border-none rounded-full text-xl font-bold cursor-pointer hover:bg-primary h-[9svh] flex items-center justify-center transition-transform active:scale-95">Done</button>
-            </div>
         </div>
     </div>
 
@@ -184,8 +187,9 @@
         const btnCapture = document.getElementById('btnCapture');
         const captureHint = document.getElementById('captureHint');
         const btnPrint = document.getElementById('btnPrint');
-        const btnDone = document.getElementById('btnDone');
+        const btnRetake = document.getElementById('btnRetake');
         const btnRow = document.getElementById('btnRow');
+        const thankYouMsg = document.getElementById('thankYouMsg');
         const receiptDate = document.getElementById('receiptDate');
 
         let ws = null;
@@ -370,22 +374,52 @@
             btnRow.classList.add('flex');
             processingOverlay.classList.add('hidden');
             
-            // Make page scrollable so buttons are reachable
+            // Make page scrollable so receipt is fully visible
             document.body.classList.remove('overflow-hidden', 'h-[100svh]');
             document.body.classList.add('overflow-y-auto', 'min-h-[100svh]', 'h-auto');
         }
 
-        // Step 4: Print receipt
+        // Retake — go back to camera capture
+        btnRetake.addEventListener('click', async () => {
+            // Hide receipt and buttons
+            receiptContainer.classList.add('hidden');
+            btnRow.classList.add('hidden');
+            thankYouMsg.classList.add('hidden');
+            
+            // Reset body scroll
+            document.body.classList.add('overflow-hidden', 'h-[100svh]');
+            document.body.classList.remove('overflow-y-auto', 'min-h-[100svh]', 'h-auto');
+            
+            // Show video and capture button
+            videoContainer.classList.remove('hidden');
+            mainHeader.classList.remove('hidden');
+            btnCapture.classList.remove('hidden');
+            btnCapture.classList.add('flex');
+            btnCapture.disabled = false;
+            btnCapture.textContent = 'Capture';
+            
+            // Restart preview
+            try {
+                const response = await fetch('/api/preview/start', { method: 'POST' });
+                const result = await response.json();
+                if (result.success && result.stream_url) {
+                    mjpegStream.src = result.stream_url;
+                }
+            } catch (e) {
+                console.error('Preview restart error:', e);
+            }
+        });
+
+        // Print receipt
         btnPrint.addEventListener('click', async () => {
             btnPrint.disabled = true;
             btnPrint.textContent = 'Printing...';
             
             try {
-                // Capture the entire receipt container as image
                 const receiptEl = document.getElementById('receiptContainer');
                 const canvas = await html2canvas(receiptEl, {
                     backgroundColor: '#ffffff',
-                    scale: 3,  // High resolution for print
+                    scale: 3,
                     useCORS: true
                 });
                 const dataUrl = canvas.toDataURL('image/png');
@@ -398,20 +432,20 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    btnPrint.textContent = 'Printed!';
+                    // Hide buttons, show thank you
+                    btnRow.classList.add('hidden');
+                    thankYouMsg.classList.remove('hidden');
                 } else {
                     btnPrint.textContent = 'Print Failed';
+                    btnPrint.disabled = false;
                     alert('Print error: ' + result.error);
                 }
             } catch (e) {
                 btnPrint.textContent = 'Print Failed';
+                btnPrint.disabled = false;
                 alert('Error: ' + e.message);
             }
-            
-            btnPrint.disabled = false;
         });
-
-        btnDone.addEventListener('click', () => { location.reload(); });
     </script>
 </body>
 </html>
