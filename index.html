@@ -90,13 +90,19 @@
 
         <!-- Darkness Threshold Slider -->
         <div id="thresholdControl" class="hidden w-full max-w-[95svw] md:max-w-[420px] flex-col items-center px-4 mb-6">
-            <label for="thresholdSlider" class="block text-sm font-bold mb-2">DARKNESS THRESHOLD</label>
-            <input type="range" id="thresholdSlider" min="0" max="255" value="30" 
+            <!-- Mode Selector -->
+            <div class="flex bg-gray-100 p-1 rounded-full mb-4 w-full">
+                <button id="modeStencil" class="flex-1 py-1 px-4 rounded-full text-sm font-bold transition-all bg-primary text-white">STENCIL</button>
+                <button id="modeGrayscale" class="flex-1 py-1 px-4 rounded-full text-sm font-bold transition-all text-gray-500 hover:text-black">GRAYSCALE</button>
+            </div>
+
+            <label id="sliderLabel" for="thresholdSlider" class="block text-sm font-bold mb-2 uppercase">Darkness Threshold</label>
+            <input type="range" id="thresholdSlider" min="0" max="255" value="130" 
                 class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
             <div class="flex justify-between w-full text-xs font-bold mt-1">
-                <span>LIGHTER</span>
-                <span id="thresholdValue">30</span>
-                <span>DARKER</span>
+                <span id="labelLeft">LIGHTER</span>
+                <span id="thresholdValue">130</span>
+                <span id="labelRight">DARKER</span>
             </div>
         </div>
 
@@ -233,6 +239,7 @@
         let ws = null;
         let previewActive = false;
         let originalFrameData = null; // Store raw capture for re-processing
+        let currentMode = 'stencil'; // 'stencil' or 'grayscale'
 
         // WebSocket Setup
         function connectWS() {
@@ -389,7 +396,7 @@
             originalFrameData = ctx.getImageData(0, 0, w, h);
             
             // Initial render
-            applyThreshold();
+            applyFilters();
 
             // 2. Clear UI
             videoContainer.classList.add('hidden');
@@ -410,20 +417,61 @@
 
         const thresholdSlider = document.getElementById('thresholdSlider');
         const thresholdValueLabel = document.getElementById('thresholdValue');
+        const sliderLabel = document.getElementById('sliderLabel');
+        const labelLeft = document.getElementById('labelLeft');
+        const labelRight = document.getElementById('labelRight');
+        
+        const modeStencil = document.getElementById('modeStencil');
+        const modeGrayscale = document.getElementById('modeGrayscale');
+
+        modeStencil.addEventListener('click', () => setMode('stencil'));
+        modeGrayscale.addEventListener('click', () => setMode('grayscale'));
+
+        function setMode(mode) {
+            currentMode = mode;
+            if (mode === 'stencil') {
+                modeStencil.classList.add('bg-primary', 'text-white');
+                modeStencil.classList.remove('text-gray-500');
+                modeGrayscale.classList.remove('bg-primary', 'text-white');
+                modeGrayscale.classList.add('text-gray-500');
+                
+                sliderLabel.textContent = "Darkness Threshold";
+                labelLeft.textContent = "LIGHTER";
+                labelRight.textContent = "DARKER";
+                thresholdSlider.min = 0;
+                thresholdSlider.max = 255;
+                thresholdSlider.value = 130;
+                thresholdValueLabel.textContent = 130;
+            } else {
+                modeGrayscale.classList.add('bg-primary', 'text-white');
+                modeGrayscale.classList.remove('text-gray-500');
+                modeStencil.classList.remove('bg-primary', 'text-white');
+                modeStencil.classList.add('text-gray-500');
+                
+                sliderLabel.textContent = "Brightness";
+                labelLeft.textContent = "DIM";
+                labelRight.textContent = "BRIGHT";
+                thresholdSlider.min = -150;
+                thresholdSlider.max = 150;
+                thresholdSlider.value = 0;
+                thresholdValueLabel.textContent = 0;
+            }
+            applyFilters();
+        }
 
         thresholdSlider.addEventListener('input', (e) => {
             const val = e.target.value;
             thresholdValueLabel.textContent = val;
-            applyThreshold();
+            applyFilters();
         });
 
-        function applyThreshold() {
+        function applyFilters() {
             if (!originalFrameData) return;
             
             const ctx = receiptCanvas.getContext('2d');
             const w = receiptCanvas.width;
             const h = receiptCanvas.height;
-            const threshold = parseInt(thresholdSlider.value);
+            const sliderVal = parseInt(thresholdSlider.value);
 
             let imageData = new ImageData(
                 new Uint8ClampedArray(originalFrameData.data),
@@ -440,19 +488,25 @@
 
                 // If pixel is fully transparent (alpha=0), treat it as white
                 if (a === 0) {
-                    data[i] = 255;
-                    data[i+1] = 255;
-                    data[i+2] = 255;
-                    data[i+3] = 255;
+                    data[i] = 255; data[i+1] = 255; data[i+2] = 255; data[i+3] = 255;
                     continue;
                 }
 
-                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                const val = gray < threshold ? 0 : 255;
+                // Calculate grayscale
+                let gray = 0.299 * r + 0.587 * g + 0.114 * b;
                 
-                data[i] = val;
-                data[i + 1] = val;
-                data[i + 2] = val;
+                let finalVal;
+                if (currentMode === 'stencil') {
+                    // Stencil: Pure black/white based on threshold
+                    finalVal = gray < sliderVal ? 0 : 255;
+                } else {
+                    // Grayscale: Adjust brightness
+                    finalVal = Math.min(255, Math.max(0, gray + sliderVal));
+                }
+                
+                data[i] = finalVal;
+                data[i + 1] = finalVal;
+                data[i + 2] = finalVal;
                 data[i + 3] = 255;
             }
             
