@@ -307,23 +307,23 @@
                     // Show processing overlay
                     processingOverlay.classList.remove('hidden');
                     
-                    // Now call capture on Pi
+                    // Call capture on Pi
                     try {
                         const response = await fetch('/api/capture', { method: 'POST' });
                         const result = await response.json();
                         if (result.success) {
                             processAndShowReceipt();
                         } else {
-                            alert("Capture failed: " + result.error);
+                            alert('Capture failed: ' + result.error);
                             processingOverlay.classList.add('hidden');
                             btnCapture.disabled = false;
-                            btnCapture.textContent = "Capture";
+                            btnCapture.textContent = 'Capture';
                         }
                     } catch (e) {
-                        alert("Error: " + e.message);
+                        alert('Error: ' + e.message);
                         processingOverlay.classList.add('hidden');
                         btnCapture.disabled = false;
-                        btnCapture.textContent = "Capture";
+                        btnCapture.textContent = 'Capture';
                     }
                 }
             }, 1000);
@@ -341,7 +341,7 @@
             const w = receiptCanvas.width;
             const h = receiptCanvas.height;
             
-            // Rotate 180 degrees (camera is upside down)
+            // Rotate 180 degrees (Pi camera is upside down)
             ctx.translate(w, h);
             ctx.rotate(Math.PI);
             ctx.drawImage(mjpegStream, 0, 0, w, h);
@@ -416,33 +416,34 @@
             btnPrint.disabled = true;
             btnPrint.textContent = 'Printing...';
             
-            if (typeof html2canvas === 'undefined') {
-                alert('html2canvas not loaded! Check internet connection.');
-                btnPrint.disabled = false;
-                btnPrint.textContent = 'Print';
-                return;
-            }
-            
             try {
-                console.log('[PRINT] Capturing receipt...');
                 const receiptEl = document.getElementById('receiptContainer');
+                
+                // Convert canvas to img (html2canvas struggles with canvas)
+                const canvasDataUrl = receiptCanvas.toDataURL('image/png');
+                const tempImg = document.createElement('img');
+                tempImg.src = canvasDataUrl;
+                tempImg.style.width = '100%';
+                tempImg.style.height = '100%';
+                tempImg.style.objectFit = 'cover';
+                receiptCanvas.parentNode.replaceChild(tempImg, receiptCanvas);
+                
                 const canvas = await html2canvas(receiptEl, {
                     backgroundColor: '#ffffff',
                     scale: 3,
                     useCORS: true
                 });
-                console.log('[PRINT] Canvas captured, size:', canvas.width, 'x', canvas.height);
+                
+                // Restore canvas
+                tempImg.parentNode.replaceChild(receiptCanvas, tempImg);
                 const dataUrl = canvas.toDataURL('image/png');
-                console.log('[PRINT] Sending to server, data length:', dataUrl.length);
                 
                 const response = await fetch('/api/print', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ image: dataUrl })
                 });
-                console.log('[PRINT] Response status:', response.status);
                 const result = await response.json();
-                console.log('[PRINT] Result:', result);
                 
                 if (result.success) {
                     btnRow.classList.add('hidden');
