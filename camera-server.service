@@ -1,0 +1,36 @@
+[Unit]
+Description=Potboy Camera Server (v2 - Live Preview)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/pi/thermalPrinterRaspy
+
+# Kill any camera/port processes before starting
+ExecStartPre=-/usr/bin/pkill -9 rpicam
+ExecStartPre=-/usr/bin/fuser -k 5001/tcp
+ExecStartPre=-/bin/sleep 2
+
+# Run the v2 client (reads config from .env)
+ExecStart=/home/pi/thermalPrinterRaspy/venv/bin/python -u /home/pi/thermalPrinterRaspy/client.py
+
+# Cleanup on stop
+ExecStopPost=-/usr/bin/pkill -9 rpicam
+ExecStopPost=-/usr/bin/fuser -k 5001/tcp
+
+Restart=always
+RestartSec=10
+TimeoutStopSec=10
+KillMode=mixed
+KillSignal=SIGTERM
+
+Environment=DISPLAY=:0
+Environment=HOME=/home/pi
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
