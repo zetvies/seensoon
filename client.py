@@ -310,6 +310,15 @@ async def websocket_client(server_url):
                 # Stream task reference
                 stream_task = None
 
+                # Heartbeat to keep connection alive (Render has idle timeout)
+                async def heartbeat():
+                    try:
+                        while True:
+                            await asyncio.sleep(15)
+                            await ws.send(json.dumps({"action": "heartbeat"}))
+                    except:
+                        pass
+
                 async def stream_frames_to_server():
                     """Push MJPEG frames to server as binary WS messages."""
                     try:
@@ -322,6 +331,8 @@ async def websocket_client(server_url):
                         print(f"[STREAM] Stream to server ended: {e}")
                     finally:
                         stop_stream_process()
+
+                hb_task = asyncio.create_task(heartbeat())
 
                 while True:
                     message = await ws.recv()

@@ -125,8 +125,14 @@ async def pi_websocket(websocket: WebSocket):
     try:
         while True:
             message = await websocket.receive()
+            msg_type = message.get("type", "")
 
-            if message.get("type") == "websocket.receive":
+            # Handle disconnect
+            if msg_type == "websocket.disconnect":
+                print("[PI] Received disconnect message")
+                break
+
+            if msg_type == "websocket.receive":
                 # Binary = MJPEG frame
                 if "bytes" in message and message["bytes"]:
                     pi.update_frame(message["bytes"])
@@ -134,6 +140,9 @@ async def pi_websocket(websocket: WebSocket):
                 elif "text" in message and message["text"]:
                     try:
                         data = json.loads(message["text"])
+                        # Ignore heartbeats
+                        if data.get("action") == "heartbeat":
+                            continue
                         request_id = data.get("id")
                         if request_id:
                             pi.resolve_request(request_id, data)
