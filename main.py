@@ -101,7 +101,11 @@ class WebcamStream:
         if not WEBCAM_AVAILABLE:
             return False
         self.stop()  # clean up any previous
-        self.cap = cv2.VideoCapture(self.camera_index)
+        import sys
+        if sys.platform == 'win32':
+            self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
+        else:
+            self.cap = cv2.VideoCapture(self.camera_index)
         if not self.cap.isOpened():
             print("[WEBCAM] Could not open camera")
             return False
