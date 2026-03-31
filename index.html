@@ -66,10 +66,10 @@
         <!-- Default Character Image -->
         <img id="characterImg" src="./assets/potboy.svg" alt="Potboy" class="h-[40svh] max-w-[90svw] object-contain">
 
-        <!-- Video Container (Now MJPEG Image) -->
+        <!-- Video Container (Browser Camera) -->
         <div id="videoContainer"
             class="w-auto max-w-[90svw] h-[40svh] aspect-[4/3] bg-black rounded-2xl overflow-hidden relative hidden">
-            <img id="mjpegStream" class="w-full h-full object-contain" src="" alt="Live Stream">
+            <video id="cameraVideo" class="w-full h-full object-contain" autoplay playsinline muted></video>
             <div id="countdown"
                 class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8rem] text-white font-bold drop-shadow-md hidden pointer-events-none z-10 transition-opacity">
                 3</div>
@@ -216,7 +216,7 @@
         // State elements
         const characterImg = document.getElementById('characterImg');
         const videoContainer = document.getElementById('videoContainer');
-        const mjpegStream = document.getElementById('mjpegStream');
+        const cameraVideo = document.getElementById('cameraVideo');
         const receiptCanvas = document.getElementById('receiptCanvas');
         const countdownEl = document.getElementById('countdown');
         const processingOverlay = document.getElementById('processingOverlay');
@@ -240,7 +240,7 @@
         let previewActive = false;
         let originalFrameData = null; // Store raw capture for re-processing
         let currentMode = 'stencil'; // 'stencil' or 'grayscale'
-        let streamSource = 'pi'; // 'pi' or 'webcam'
+        let cameraStream = null; // MediaStream from getUserMedia
 
         // WebSocket Setup
         function connectWS() {
@@ -307,34 +307,25 @@
             btnStart.disabled = true;
 
             try {
-                const response = await fetch('/api/preview/start', { method: 'POST' });
-                const result = await response.json();
+                // Use browser camera directly via getUserMedia
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+                cameraVideo.srcObject = cameraStream;
 
-                if (result.success) {
-                    streamSource = result.source || 'pi';
-                    btnStart.classList.add('hidden');
-                    btnStart.classList.remove('flex');
-                    characterImg.classList.add('hidden');
+                btnStart.classList.add('hidden');
+                btnStart.classList.remove('flex');
+                characterImg.classList.add('hidden');
 
-                    // Rotate 180 for Pi (upside-down camera), not for webcam
-                    if (streamSource === 'pi') {
-                        mjpegStream.classList.add('rotate-180');
-                    } else {
-                        mjpegStream.classList.remove('rotate-180');
-                    }
+                videoContainer.classList.remove('hidden');
+                videoContainer.classList.add('block');
 
-                    mjpegStream.src = result.stream_url + '?t=' + Date.now();
-                    videoContainer.classList.remove('hidden');
-                    videoContainer.classList.add('block');
-
-                    btnCapture.classList.remove('hidden');
-                    btnCapture.classList.add('flex');
-                    previewActive = true;
-                } else {
-                    alert('Could not start preview: ' + result.error);
-                }
+                btnCapture.classList.remove('hidden');
+                btnCapture.classList.add('flex');
+                previewActive = true;
             } catch (e) {
-                alert('Error connecting to server: ' + e.message);
+                alert('Could not access camera: ' + e.message);
             }
             btnStart.disabled = false;
         });
@@ -362,24 +353,8 @@
                     // Show processing overlay
                     processingOverlay.classList.remove('hidden');
 
-                    // Call capture on Pi
-                    try {
-                        const response = await fetch('/api/capture', { method: 'POST' });
-                        const result = await response.json();
-                        if (result.success) {
-                            processAndShowReceipt();
-                        } else {
-                            alert('Capture failed: ' + result.error);
-                            processingOverlay.classList.add('hidden');
-                            btnCapture.disabled = false;
-                            btnCapture.textContent = 'Capture';
-                        }
-                    } catch (e) {
-                        alert('Error: ' + e.message);
-                        processingOverlay.classList.add('hidden');
-                        btnCapture.disabled = false;
-                        btnCapture.textContent = 'Capture';
-                    }
+                    // Capture frame directly from browser video
+                    processAndShowReceipt();
                 }
             }, 1000);
         });
@@ -389,19 +364,17 @@
         }
 
         function processAndShowReceipt() {
-            // 1. Capture current MJPEG frame to canvas
+            // 1. Capture current frame from browser camera video
             receiptCanvas.width = 300;
             receiptCanvas.height = 225;
             const ctx = receiptCanvas.getContext('2d');
             const w = receiptCanvas.width;
             const h = receiptCanvas.height;
 
-            // Rotate 180 degrees only for Pi camera (upside down)
-            if (streamSource === 'pi') {
-                ctx.translate(w, h);
-                ctx.rotate(Math.PI);
-            }
-            ctx.drawImage(mjpegStream, 0, 0, w, h);
+            ctx.drawImage(cameraVideo, 0, 0, w, h);
+
+            // Stop the camera stream after capture
+            stopCamera();
 
             // Store original pixels so we can re-threshold without losing detail
             originalFrameData = ctx.getImageData(0, 0, w, h);
@@ -524,6 +497,15 @@
             ctx.putImageData(imageData, 0, 0);
         }
 
+        // Helper to stop camera stream
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            cameraVideo.srcObject = null;
+        }
+
         // Retake — go back to camera capture
         btnRetake.addEventListener('click', async () => {
             // Hide receipt and buttons
@@ -544,21 +526,16 @@
             btnCapture.disabled = false;
             btnCapture.textContent = 'Capture';
 
-            // Restart preview
+            // Restart browser camera
             try {
-                const response = await fetch('/api/preview/start', { method: 'POST' });
-                const result = await response.json();
-                if (result.success && result.stream_url) {
-                    streamSource = result.source || 'pi';
-                    if (streamSource === 'pi') {
-                        mjpegStream.classList.add('rotate-180');
-                    } else {
-                        mjpegStream.classList.remove('rotate-180');
-                    }
-                    mjpegStream.src = result.stream_url + '?t=' + Date.now();
-                }
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+                cameraVideo.srcObject = cameraStream;
             } catch (e) {
-                console.error('Preview restart error:', e);
+                console.error('Camera restart error:', e);
+                alert('Could not access camera: ' + e.message);
             }
         });
 
