@@ -222,6 +222,9 @@
             <button id="modeGrayscale" class="text-sm font-bold text-gray-300">
               GRAYSCALE
             </button>
+            <button id="modeWinner" class="text-sm font-bold text-gray-300">
+              WINNER
+            </button>
           </div>
 
           <label
@@ -249,6 +252,12 @@
             PRINT
           </button>
           <button
+            id="btnDownload"
+            class="w-full border-2 border-black bg-white text-black font-bold h-[5svh] flex items-center justify-center transition-transform active:scale-95 tracking-widest uppercase"
+          >
+            DOWNLOAD
+          </button>
+          <button
             id="btnRetake"
             class="w-full bg-[#1b1a1c] text-white border-none font-bold h-[5svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 tracking-widest uppercase"
           >
@@ -265,7 +274,7 @@
         Thank you for coming!
       </div>
 
-      <!-- Receipt Container -->
+      <!-- Receipt Container (original - plain mode) -->
       <div
         id="receiptContainer"
         class="hidden w-full max-w-[80svw] md:max-w-[420px] relative border-[2px] mb-[3svh] border-black"
@@ -273,6 +282,42 @@
         <canvas
           id="receiptCanvas"
           class="w-full h-auto aspect-[2/3] object-cover block"
+        ></canvas>
+      </div>
+
+      <!-- Stencil Template Container -->
+      <div
+        id="stencilTemplateContainer"
+        class="hidden w-full max-w-[80svw] md:max-w-[420px] relative mb-[3svh]"
+      >
+        <canvas
+          id="stencilTemplateCanvas"
+          class="w-full h-auto block"
+          style="aspect-ratio: 944 / 1535"
+        ></canvas>
+      </div>
+
+      <!-- Grayscale Template Container -->
+      <div
+        id="grayscaleTemplateContainer"
+        class="hidden w-full max-w-[80svw] md:max-w-[420px] relative mb-[3svh]"
+      >
+        <canvas
+          id="grayscaleTemplateCanvas"
+          class="w-full h-auto block"
+          style="aspect-ratio: 944 / 1535"
+        ></canvas>
+      </div>
+
+      <!-- Winner Template Container -->
+      <div
+        id="winnerTemplateContainer"
+        class="hidden w-full max-w-[80svw] md:max-w-[420px] relative mb-[3svh]"
+      >
+        <canvas
+          id="winnerTemplateCanvas"
+          class="w-full h-auto block"
+          style="aspect-ratio: 944 / 1535"
         ></canvas>
       </div>
     </main>
@@ -342,6 +387,7 @@
       const btnCapture = document.getElementById("btnCapture");
       const captureHint = document.getElementById("captureHint");
       const btnPrint = document.getElementById("btnPrint");
+      const btnDownload = document.getElementById("btnDownload");
       const btnRetake = document.getElementById("btnRetake");
       const btnRow = document.getElementById("btnRow");
       const thankYouMsg = document.getElementById("thankYouMsg");
@@ -396,6 +442,7 @@
         };
       }
       connectWS();
+
 
       function handleWSMessage(data) {
         console.log("WS Data:", data);
@@ -536,9 +583,22 @@
 
         // 2. Clear UI
         videoContainer.classList.add("hidden");
-        receiptContainer.classList.remove("hidden");
-        receiptContainer.classList.add("flex");
         btnCapture.classList.add("hidden");
+
+        // Show the correct template container based on current mode
+        receiptContainer.classList.add("hidden");
+        receiptContainer.classList.remove("flex");
+        stencilTemplateContainer.classList.add("hidden");
+        grayscaleTemplateContainer.classList.add("hidden");
+        winnerTemplateContainer.classList.add("hidden");
+
+        if (currentMode === "stencil") {
+          stencilTemplateContainer.classList.remove("hidden");
+        } else if (currentMode === "grayscale") {
+          grayscaleTemplateContainer.classList.remove("hidden");
+        } else if (currentMode === "winner") {
+          winnerTemplateContainer.classList.remove("hidden");
+        }
         btnRow.classList.remove("hidden");
         btnRow.classList.add("flex");
         document.getElementById("thresholdControl").classList.remove("hidden");
@@ -561,55 +621,113 @@
 
       const modeStencil = document.getElementById("modeStencil");
       const modeGrayscale = document.getElementById("modeGrayscale");
+      const modeWinner = document.getElementById("modeWinner");
+
+      // Template containers
+      const stencilTemplateContainer = document.getElementById(
+        "stencilTemplateContainer",
+      );
+      const grayscaleTemplateContainer = document.getElementById(
+        "grayscaleTemplateContainer",
+      );
+      const winnerTemplateContainer = document.getElementById(
+        "winnerTemplateContainer",
+      );
+
+      // Template canvases
+      const stencilTemplateCanvas = document.getElementById(
+        "stencilTemplateCanvas",
+      );
+      const grayscaleTemplateCanvas = document.getElementById(
+        "grayscaleTemplateCanvas",
+      );
+      const winnerTemplateCanvas = document.getElementById(
+        "winnerTemplateCanvas",
+      );
+
+      // Preload template images
+      const templateImages = {};
+      function preloadTemplateImage(name) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            templateImages[name] = img;
+            resolve();
+          };
+          img.src = `./assets/${name}.png`;
+        });
+      }
+      Promise.all([
+        preloadTemplateImage("stencil"),
+        preloadTemplateImage("grayscale"),
+        preloadTemplateImage("winner"),
+      ]);
+
+      // Photo placement regions (pixel coords on 944x1535 template)
+      // These define where the photo placeholder sits on each template
+      const templatePhotoRegions = {
+        stencil: { x: 60, y: 339, w: 824, h: 859 },
+        grayscale: { x: 0, y: 0, w: 762, h: 1534 },
+        winner: { x: 69, y: 436, w: 809, h: 432 },
+      };
 
       modeStencil.addEventListener("click", () => setMode("stencil"));
       modeGrayscale.addEventListener("click", () => setMode("grayscale"));
+      modeWinner.addEventListener("click", () => setMode("winner"));
 
       function setMode(mode) {
         currentMode = mode;
-        if (mode === "stencil") {
-          modeStencil.classList.add(
-            "text-black",
-            "border",
-            "border-black",
-            "px-2",
-            "py-0.5",
-          );
-          modeStencil.classList.remove("text-gray-300");
-          modeGrayscale.classList.remove(
-            "text-black",
-            "border",
-            "border-black",
-            "px-2",
-            "py-0.5",
-          );
-          modeGrayscale.classList.add("text-gray-300");
+        const allModeButtons = [modeStencil, modeGrayscale, modeWinner];
+        const activeClasses = [
+          "text-black",
+          "border",
+          "border-black",
+          "px-2",
+          "py-0.5",
+        ];
 
+        // Reset all buttons
+        allModeButtons.forEach((btn) => {
+          btn.classList.remove(...activeClasses);
+          btn.classList.add("text-gray-300");
+        });
+
+        // Activate selected button
+        const activeBtn =
+          mode === "stencil"
+            ? modeStencil
+            : mode === "grayscale"
+              ? modeGrayscale
+              : modeWinner;
+        activeBtn.classList.add(...activeClasses);
+        activeBtn.classList.remove("text-gray-300");
+
+        // Set slider ranges per mode
+        if (mode === "stencil" || mode === "winner") {
           thresholdSlider.min = 0;
           thresholdSlider.max = 200;
           thresholdSlider.value = 100;
         } else {
-          modeGrayscale.classList.add(
-            "text-black",
-            "border",
-            "border-black",
-            "px-2",
-            "py-0.5",
-          );
-          modeGrayscale.classList.remove("text-gray-300");
-          modeStencil.classList.remove(
-            "text-black",
-            "border",
-            "border-black",
-            "px-2",
-            "py-0.5",
-          );
-          modeStencil.classList.add("text-gray-300");
-
           thresholdSlider.min = -160;
           thresholdSlider.max = 0;
           thresholdSlider.value = -80;
         }
+
+        // Show/hide the correct containers
+        receiptContainer.classList.add("hidden");
+        receiptContainer.classList.remove("flex");
+        stencilTemplateContainer.classList.add("hidden");
+        grayscaleTemplateContainer.classList.add("hidden");
+        winnerTemplateContainer.classList.add("hidden");
+
+        if (mode === "stencil") {
+          stencilTemplateContainer.classList.remove("hidden");
+        } else if (mode === "grayscale") {
+          grayscaleTemplateContainer.classList.remove("hidden");
+        } else if (mode === "winner") {
+          winnerTemplateContainer.classList.remove("hidden");
+        }
+
         applyFilters();
       }
 
@@ -617,39 +735,19 @@
         applyFilters();
       });
 
-      function applyFilters() {
-        if (!originalFrameData) return;
-
-        const ctx = receiptCanvas.getContext("2d");
-        const w = receiptCanvas.width;
-        const h = receiptCanvas.height;
-        const sliderVal = parseInt(thresholdSlider.value);
-
+      function applyStencilFilter(srcData, w, h, sliderVal) {
         let imageData = new ImageData(
-          new Uint8ClampedArray(originalFrameData.data),
-          originalFrameData.width,
-          originalFrameData.height,
+          new Uint8ClampedArray(srcData.data),
+          srcData.width,
+          srcData.height,
         );
         let data = imageData.data;
 
-        const bayerMatrix8x8 = [
-          [ 0, 48, 12, 60,  3, 51, 15, 63],
-          [32, 16, 44, 28, 35, 19, 47, 31],
-          [ 8, 56,  4, 52, 11, 59,  7, 55],
-          [40, 24, 36, 20, 43, 27, 39, 23],
-          [ 2, 50, 14, 62,  1, 49, 13, 61],
-          [34, 18, 46, 30, 33, 17, 45, 29],
-          [10, 58,  6, 54,  9, 57,  5, 53],
-          [42, 26, 38, 22, 41, 25, 37, 21]
-        ].map(row => row.map(v => v * 4));
-
         for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          const a = data[i + 3];
-
-          // If pixel is fully transparent (alpha=0), treat it as white
+          const r = data[i],
+            g = data[i + 1],
+            b = data[i + 2],
+            a = data[i + 3];
           if (a === 0) {
             data[i] = 255;
             data[i + 1] = 255;
@@ -657,33 +755,273 @@
             data[i + 3] = 255;
             continue;
           }
-
-          // Calculate grayscale
           let gray = 0.299 * r + 0.587 * g + 0.114 * b;
-
-          let finalVal;
-          if (currentMode === "stencil") {
-            // Stencil: Pure black/white based on threshold
-            finalVal = gray < sliderVal ? 0 : 255;
-          } else {
-            // Ordered Dither (Dotted grayscale)
-            let adjustedGray = Math.min(255, Math.max(0, gray + sliderVal));
-            
-            const pixelIndex = i / 4;
-            const x = pixelIndex % w;
-            const y = Math.floor(pixelIndex / w);
-            
-            const threshold = bayerMatrix8x8[y % 8][x % 8];
-            finalVal = adjustedGray > threshold ? 255 : 0;
-          }
-
+          let finalVal = gray < sliderVal ? 0 : 255;
           data[i] = finalVal;
           data[i + 1] = finalVal;
           data[i + 2] = finalVal;
           data[i + 3] = 255;
         }
+        return imageData;
+      }
 
-        ctx.putImageData(imageData, 0, 0);
+      function applyGrayscaleFilter(srcData, w, h, sliderVal) {
+        let imageData = new ImageData(
+          new Uint8ClampedArray(srcData.data),
+          srcData.width,
+          srcData.height,
+        );
+        let data = imageData.data;
+
+        const bayerMatrix8x8 = [
+          [0, 48, 12, 60, 3, 51, 15, 63],
+          [32, 16, 44, 28, 35, 19, 47, 31],
+          [8, 56, 4, 52, 11, 59, 7, 55],
+          [40, 24, 36, 20, 43, 27, 39, 23],
+          [2, 50, 14, 62, 1, 49, 13, 61],
+          [34, 18, 46, 30, 33, 17, 45, 29],
+          [10, 58, 6, 54, 9, 57, 5, 53],
+          [42, 26, 38, 22, 41, 25, 37, 21],
+        ].map((row) => row.map((v) => v * 4));
+
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i],
+            g = data[i + 1],
+            b = data[i + 2],
+            a = data[i + 3];
+          if (a === 0) {
+            data[i] = 255;
+            data[i + 1] = 255;
+            data[i + 2] = 255;
+            data[i + 3] = 255;
+            continue;
+          }
+          let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+          let adjustedGray = Math.min(255, Math.max(0, gray + sliderVal));
+          const pixelIndex = i / 4;
+          const x = pixelIndex % w;
+          const y = Math.floor(pixelIndex / w);
+          const threshold = bayerMatrix8x8[y % 8][x % 8];
+          let finalVal = adjustedGray > threshold ? 255 : 0;
+          data[i] = finalVal;
+          data[i + 1] = finalVal;
+          data[i + 2] = finalVal;
+          data[i + 3] = 255;
+        }
+        return imageData;
+      }
+
+      function applyFilters() {
+        if (!originalFrameData) return;
+
+        const sliderVal = parseInt(thresholdSlider.value);
+        const w = originalFrameData.width;
+        const h = originalFrameData.height;
+
+        // Determine which filter to apply based on mode
+        let filterMode = currentMode;
+        // Winner uses stencil filter
+        if (filterMode === "winner") filterMode = "stencil";
+
+        let processedImageData;
+        if (filterMode === "stencil") {
+          processedImageData = applyStencilFilter(
+            originalFrameData,
+            w,
+            h,
+            sliderVal,
+          );
+        } else {
+          processedImageData = applyGrayscaleFilter(
+            originalFrameData,
+            w,
+            h,
+            sliderVal,
+          );
+        }
+
+        // Render to the plain receipt canvas (always update for print)
+        const ctx = receiptCanvas.getContext("2d");
+        receiptCanvas.width = w;
+        receiptCanvas.height = h;
+        ctx.putImageData(processedImageData, 0, 0);
+
+        // Render to the corresponding template canvas
+        renderTemplateComposite(currentMode, processedImageData);
+      }
+
+      function renderTemplateComposite(mode, processedImageData) {
+        const templateImg = templateImages[mode];
+        if (!templateImg) return;
+
+        const canvasMap = {
+          stencil: stencilTemplateCanvas,
+          grayscale: grayscaleTemplateCanvas,
+          winner: winnerTemplateCanvas,
+        };
+        const canvas = canvasMap[mode];
+        if (!canvas) return;
+
+        const TW = templateImg.naturalWidth; // 944
+        const TH = templateImg.naturalHeight; // 1535
+        canvas.width = TW;
+        canvas.height = TH;
+        const ctx = canvas.getContext("2d");
+
+        // Clear canvas
+        ctx.clearRect(0, 0, TW, TH);
+
+        // Get the photo region for this template
+        const region = templatePhotoRegions[mode];
+
+        // Create a temporary canvas with the processed photo
+        const tmpCanvas = document.createElement("canvas");
+        tmpCanvas.width = processedImageData.width;
+        tmpCanvas.height = processedImageData.height;
+        tmpCanvas.getContext("2d").putImageData(processedImageData, 0, 0);
+
+        // Draw photo into the placeholder region (object-cover style)
+        const photoW = processedImageData.width;
+        const photoH = processedImageData.height;
+        const regionRatio = region.w / region.h;
+        const photoRatio = photoW / photoH;
+
+        let sx = 0,
+          sy = 0,
+          sw = photoW,
+          sh = photoH;
+        if (photoRatio > regionRatio) {
+          // Photo is wider — crop sides
+          sw = photoH * regionRatio;
+          sx = (photoW - sw) / 2;
+        } else {
+          // Photo is taller — crop top/bottom
+          sh = photoW / regionRatio;
+          sy = (photoH - sh) / 2;
+        }
+
+        // Draw the template image first (as background)
+        ctx.drawImage(templateImg, 0, 0, TW, TH);
+
+        // Draw the photo on top into the placeholder region
+        ctx.drawImage(
+          tmpCanvas,
+          sx,
+          sy,
+          sw,
+          sh,
+          region.x,
+          region.y,
+          region.w,
+          region.h,
+        );
+
+        // Draw timestamps
+        const now = new Date();
+        const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+        const fullDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+        const fullMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const dayName = days[now.getDay()];
+        const fullDayName = fullDays[now.getDay()];
+        const monthName = months[now.getMonth()];
+        const fullMonthName = fullMonths[now.getMonth()];
+        const dateNum = now.getDate();
+        const year = now.getFullYear();
+        const hours = now.getHours().toString().padStart(2, "0");
+        const mins = now.getMinutes().toString().padStart(2, "0");
+        const timeStr = `${hours}.${mins}`;
+
+        if (mode === "grayscale") {
+          // Top-left of photo area: "Date: Wednesday, 4 March 2026 // Hours: 13.12"
+          const tx = region.x + 28;
+          const ty = region.y + 56;
+
+          ctx.fillStyle = "white";
+          ctx.textBaseline = "alphabetic";
+
+          // "Date: " (small)
+          const labelDate = "Date: ";
+          ctx.font = "bold 22px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+          let cx = tx;
+          ctx.fillText(labelDate, cx, ty);
+          cx += ctx.measureText(labelDate).width;
+
+          // "Wednesday, 4 March 2026" (larger)
+          const dateText = `${fullDayName}, ${dateNum} ${fullMonthName} ${year}`;
+          ctx.font = "bold 34px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+          ctx.fillText(dateText, cx, ty);
+          cx += ctx.measureText(dateText).width;
+
+          // " // " separator
+          const sep = " // ";
+          ctx.font = "bold 34px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+          ctx.fillText(sep, cx, ty);
+          cx += ctx.measureText(sep).width;
+
+          // "Hours: " (small)
+          const labelHours = "Hours: ";
+          ctx.font = "bold 22px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+          ctx.fillText(labelHours, cx, ty);
+          cx += ctx.measureText(labelHours).width;
+
+          // "13.12" (larger)
+          ctx.font = "bold 34px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+          ctx.fillText(timeStr, cx, ty);
+
+        } else if (mode === "winner") {
+          // Top-left & top-right of the FULL canvas bg
+          const pad = 40;
+          const boxH = 44;
+          const dateText = `date: ${dayName}, ${dateNum} ${monthName} ${year}`;
+          const timeText = `time: ${timeStr}`;
+
+          ctx.font = "bold 28px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+          ctx.textBaseline = "middle";
+
+          // --- Date box (top-left) ---
+          const dm = ctx.measureText(dateText);
+          const dBoxW = dm.width + 24;
+          const dBoxX = pad;
+          const dBoxY = pad;
+          ctx.fillStyle = "black";
+          ctx.fillRect(dBoxX, dBoxY, dBoxW, boxH);
+          ctx.strokeStyle = "white";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(dBoxX, dBoxY, dBoxW, boxH);
+          ctx.fillStyle = "white";
+          ctx.fillText(dateText, dBoxX + 12, dBoxY + boxH / 2);
+
+          // --- Time box (top-right) ---
+          const tm = ctx.measureText(timeText);
+          const tBoxW = tm.width + 24;
+          const tBoxX = TW - tBoxW - pad;
+          const tBoxY = pad;
+          ctx.fillStyle = "black";
+          ctx.fillRect(tBoxX, tBoxY, tBoxW, boxH);
+          ctx.strokeStyle = "white";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(tBoxX, tBoxY, tBoxW, boxH);
+          ctx.fillStyle = "white";
+          ctx.fillText(timeText, tBoxX + 12, tBoxY + boxH / 2);
+
+        } else if (mode === "stencil") {
+          // Below the photo: date bottom-left, time bottom-right
+          const belowY = region.y + region.h + 36;
+          const dateText = `date: ${dayName}, ${dateNum} ${monthName} ${year}`;
+          const timeText = `time: ${timeStr}`;
+
+          ctx.font = "400 28px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+          ctx.fillStyle = "black";
+          ctx.textBaseline = "alphabetic";
+
+          // Bottom-left
+          ctx.fillText(dateText, region.x, belowY);
+
+          // Bottom-right
+          const tm = ctx.measureText(timeText);
+          ctx.fillText(timeText, region.x + region.w - tm.width, belowY);
+        }
       }
 
       // Helper to stop camera stream
@@ -701,8 +1039,12 @@
         const mainFooter = document.getElementById("mainFooter");
         mainFooter.classList.remove("hidden");
 
-        // Hide receipt and buttons
+        // Hide receipt and all template containers and buttons
         receiptContainer.classList.add("hidden");
+        receiptContainer.classList.remove("flex");
+        stencilTemplateContainer.classList.add("hidden");
+        grayscaleTemplateContainer.classList.add("hidden");
+        winnerTemplateContainer.classList.add("hidden");
         btnRow.classList.add("hidden");
         document.getElementById("thresholdControl").classList.add("hidden");
         thankYouMsg.classList.add("hidden");
@@ -739,6 +1081,19 @@
         }
       });
 
+      // Download image
+      btnDownload.addEventListener("click", () => {
+        let printCanvas = receiptCanvas;
+        if (currentMode === "stencil") printCanvas = stencilTemplateCanvas;
+        else if (currentMode === "grayscale") printCanvas = grayscaleTemplateCanvas;
+        else if (currentMode === "winner") printCanvas = winnerTemplateCanvas;
+
+        const link = document.createElement("a");
+        link.download = `potboy-${currentMode}.png`;
+        link.href = printCanvas.toDataURL("image/png");
+        link.click();
+      });
+
       // Print receipt
       btnPrint.addEventListener("click", async () => {
         console.log("[PRINT] Button clicked");
@@ -750,8 +1105,13 @@
           );
 
         try {
-          // Just use the 2:3 canvas as is!
-          const dataUrl = receiptCanvas.toDataURL("image/png");
+          // Use the active template canvas for printing
+          let printCanvas = receiptCanvas;
+          if (currentMode === "stencil") printCanvas = stencilTemplateCanvas;
+          else if (currentMode === "grayscale")
+            printCanvas = grayscaleTemplateCanvas;
+          else if (currentMode === "winner") printCanvas = winnerTemplateCanvas;
+          const dataUrl = printCanvas.toDataURL("image/png");
 
           console.log("[PRINT] Sending to server, size:", dataUrl.length);
           if (ws && ws.readyState === 1)
