@@ -178,7 +178,7 @@
       >
         <img
           id="mjpegStream"
-          class="w-full h-full object-cover"
+          class="w-full h-full object-cover rotate-180"
           src=""
           alt="Live Stream"
         />
@@ -548,6 +548,10 @@
         const ctx = receiptCanvas.getContext("2d");
         const w = receiptCanvas.width;
         const h = receiptCanvas.height;
+
+        // Rotate 180 degrees (Pi camera is upside down)
+        ctx.translate(outW, outH);
+        ctx.rotate(Math.PI);
 
         // Draw the MJPEG stream image onto canvas
         // Calculate crop for object-cover style (2:3 target)
