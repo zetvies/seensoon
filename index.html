@@ -136,7 +136,7 @@
       <!-- Video Container (Browser Camera) -->
       <div
         id="videoContainer"
-        class="w-auto max-w-[90svw] h-[55svh] aspect-[4/3] bg-black rounded-2xl overflow-hidden relative hidden"
+        class="max-w-[90svw] max-h-[60svh] aspect-[2/3] border border-black border-[.2svh] overflow-hidden relative hidden mt-[4svh]"
       >
         <video
           id="cameraVideo"
@@ -355,7 +355,7 @@
         <!-- Capture -->
         <button
           id="btnCapture"
-          class="hidden bg-black text-white border-none text-2xl font-bold cursor-pointer hover:bg-neutral-800 w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed tracking-widest uppercase"
+          class="hidden bg-black font text-white border-none text-[3svh] cursor-pointer hover:bg-neutral-800 w-full max-w-[90svw] md:max-w-[30svw] py-[.5svh] items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed tracking-widest uppercase"
         >
           CAPTURE
         </button>
@@ -363,7 +363,7 @@
           id="captureHint"
           class="hidden text-black font-bold animate-pulse text-lg"
         >
-          Please look at the camera...
+          CHEESE!
         </div>
       </div>
 
@@ -533,14 +533,40 @@
       }
 
       function processAndShowReceipt() {
-        // 1. Capture current frame from browser camera video
-        receiptCanvas.width = 300;
-        receiptCanvas.height = 225;
+        // 1. Capture the visible 2:3 crop from the camera video
+        // The container is 2:3 with object-cover, so we need to
+        // calculate which portion of the native video is visible.
+        const videoW = cameraVideo.videoWidth;
+        const videoH = cameraVideo.videoHeight;
+        const targetRatio = 2 / 3; // container aspect ratio
+
+        let sx, sy, sw, sh;
+        const videoRatio = videoW / videoH;
+
+        if (videoRatio > targetRatio) {
+          // Video is wider than container — crop sides
+          sh = videoH;
+          sw = videoH * targetRatio;
+          sx = (videoW - sw) / 2;
+          sy = 0;
+        } else {
+          // Video is taller — crop top/bottom
+          sw = videoW;
+          sh = videoW / targetRatio;
+          sx = 0;
+          sy = (videoH - sh) / 2;
+        }
+
+        // Output canvas at 2:3 ratio
+        const outW = 400;
+        const outH = 600;
+        receiptCanvas.width = outW;
+        receiptCanvas.height = outH;
         const ctx = receiptCanvas.getContext("2d");
         const w = receiptCanvas.width;
         const h = receiptCanvas.height;
 
-        ctx.drawImage(cameraVideo, 0, 0, w, h);
+        ctx.drawImage(cameraVideo, sx, sy, sw, sh, 0, 0, outW, outH);
 
         // Stop the camera stream after capture
         stopCamera();
