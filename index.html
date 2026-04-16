@@ -110,15 +110,29 @@
       <hr class="mt-3 border-t-2 border-black" />
     </header>
 
+    <!-- ===== NO PARAMS HEADER ===== -->
+    <div
+      id="noParamsHeader"
+      class="w-full pt-[12svh] flex-shrink-0 flex font-thin flex-col items-center gap-[4svh] font-bold text-lg hidden max-w-[80svw] mx-auto text-center"
+      style="letter-spacing: 0.3em"
+    >
+      <div>C O M E</div>
+      <div>H U N G R Y</div>
+      <div class="tracking-widest">&lt; 3 &nbsp; &lt; 3</div>
+    </div>
+
     <!-- html2canvas for receipt printing -->
     <script src="/assets/html2canvas.min.js"></script>
 
     <!-- ===== CONTENT ===== -->
     <main
-      class="flex-1 flex flex-col items-center justify-start w-full max-w-[90svw] relative overflow-hidden"
+      class="flex flex-col flex-1 items-center justify-start w-full max-w-[90svw] relative overflow-hidden"
     >
       <!-- Default Character Images (slideshow) -->
-      <div id="imageContainer" class="h-[55svh] flex justify-center pt-[10svh]">
+      <div
+        id="imageContainer"
+        class="h-[55svh] flex flex-col items-center justify-start pt-[10svh] transition-all"
+      >
         <img
           src="./assets/image-1.png"
           alt="Potboy"
@@ -128,26 +142,32 @@
         <img
           src="./assets/image-2.png"
           alt="Potboy"
-          class="slideshow-img max-w-[80svw] object-contain hidden"
+          class="slideshow-img w-[80svw] max-w-[80svw] object-contain hidden"
           style="max-height: 45svh"
         />
         <img
           src="./assets/image-3.png"
           alt="Potboy"
-          class="slideshow-img max-w-[80svw] object-contain hidden"
+          class="slideshow-img w-[80svw] max-w-[80svw] object-contain hidden"
           style="max-height: 45svh"
         />
         <img
           src="./assets/image-4.png"
           alt="Potboy"
-          class="slideshow-img max-w-[80svw] object-contain hidden"
+          class="slideshow-img w-[80svw] max-w-[80svw] object-contain hidden"
           style="max-height: 45svh"
         />
         <img
           src="./assets/image-5.png"
           alt="Potboy"
-          class="slideshow-img max-w-[80svw] object-contain hidden"
+          class="slideshow-img w-[80svw] max-w-[80svw] object-contain hidden"
           style="max-height: 8svh"
+        />
+        <img
+          id="defaultAsset"
+          src="./assets/default-asset.png"
+          alt="Potboy Default"
+          class="w-[50svw] max-h-[40svh] mt-[10svh] object-contain hidden"
         />
       </div>
 
@@ -214,8 +234,8 @@
               type="range"
               id="thresholdSlider"
               min="0"
-              max="255"
-              value="130"
+              max="200"
+              value="100"
               class="absolute w-full appearance-none bg-transparent m-0 cursor-pointer z-10 h-6 custom-slider"
             />
           </div>
@@ -260,10 +280,13 @@
     <!-- ===== FOOTER ===== -->
     <footer
       id="mainFooter"
-      class="w-full px-6 pb-5 pt-3 flex-shrink-0 flex flex-col items-center gap-3"
+      class="w-full px-6 pb-[3svh] pt-3 flex-shrink-0 flex flex-col items-center gap-3"
     >
       <!-- Controls -->
-      <div class="w-full flex flex-col items-center gap-[2svh] z-30">
+      <div
+        id="controlsBlock"
+        class="w-full flex flex-col items-center gap-[2svh] z-30"
+      >
         <!-- Start Button -->
         <button
           id="btnStart"
@@ -312,6 +335,8 @@
       const processingOverlay = document.getElementById("processingOverlay");
       const receiptContainer = document.getElementById("receiptContainer");
       const mainHeader = document.getElementById("mainHeader");
+      const noParamsHeader = document.getElementById("noParamsHeader");
+      const controlsBlock = document.getElementById("controlsBlock");
 
       const btnStart = document.getElementById("btnStart");
       const btnCapture = document.getElementById("btnCapture");
@@ -321,6 +346,10 @@
       const btnRow = document.getElementById("btnRow");
       const thankYouMsg = document.getElementById("thankYouMsg");
 
+      // Check URL Params
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasCode = urlParams.has("code");
+
       let ws = null;
       let previewActive = false;
       let originalFrameData = null; // Store raw capture for re-processing
@@ -329,11 +358,27 @@
 
       // Image slideshow (toggle visibility every 4s)
       let slideshowIndex = 0;
-      let slideshowInterval = setInterval(() => {
-        slideshowImgs[slideshowIndex].classList.add("hidden");
-        slideshowIndex = (slideshowIndex + 1) % slideshowImgs.length;
-        slideshowImgs[slideshowIndex].classList.remove("hidden");
-      }, 4000);
+      let slideshowInterval = null;
+
+      if (!hasCode) {
+        // Show "no params" page
+        mainHeader.classList.add("hidden");
+        noParamsHeader.classList.remove("hidden");
+        noParamsHeader.classList.add("flex");
+        controlsBlock.classList.add("hidden");
+
+        imageContainer.classList.remove("pt-[10svh]", "h-[55svh]");
+        imageContainer.classList.add("flex-1", "w-full", "min-h-0");
+
+        slideshowImgs.forEach((img) => img.classList.add("hidden"));
+        document.getElementById("defaultAsset").classList.remove("hidden");
+      } else {
+        slideshowInterval = setInterval(() => {
+          slideshowImgs[slideshowIndex].classList.add("hidden");
+          slideshowIndex = (slideshowIndex + 1) % slideshowImgs.length;
+          slideshowImgs[slideshowIndex].classList.remove("hidden");
+        }, 4000);
+      }
 
       // WebSocket Setup
       function connectWS() {
@@ -541,8 +586,8 @@
           modeGrayscale.classList.add("text-gray-300");
 
           thresholdSlider.min = 0;
-          thresholdSlider.max = 255;
-          thresholdSlider.value = 130;
+          thresholdSlider.max = 200;
+          thresholdSlider.value = 100;
         } else {
           modeGrayscale.classList.add(
             "text-black",
@@ -561,9 +606,9 @@
           );
           modeStencil.classList.add("text-gray-300");
 
-          thresholdSlider.min = -150;
-          thresholdSlider.max = 150;
-          thresholdSlider.value = 0;
+          thresholdSlider.min = -160;
+          thresholdSlider.max = 0;
+          thresholdSlider.value = -80;
         }
         applyFilters();
       }
@@ -586,6 +631,17 @@
           originalFrameData.height,
         );
         let data = imageData.data;
+
+        const bayerMatrix8x8 = [
+          [ 0, 48, 12, 60,  3, 51, 15, 63],
+          [32, 16, 44, 28, 35, 19, 47, 31],
+          [ 8, 56,  4, 52, 11, 59,  7, 55],
+          [40, 24, 36, 20, 43, 27, 39, 23],
+          [ 2, 50, 14, 62,  1, 49, 13, 61],
+          [34, 18, 46, 30, 33, 17, 45, 29],
+          [10, 58,  6, 54,  9, 57,  5, 53],
+          [42, 26, 38, 22, 41, 25, 37, 21]
+        ].map(row => row.map(v => v * 4));
 
         for (let i = 0; i < data.length; i += 4) {
           const r = data[i];
@@ -610,8 +666,15 @@
             // Stencil: Pure black/white based on threshold
             finalVal = gray < sliderVal ? 0 : 255;
           } else {
-            // Grayscale: Adjust brightness
-            finalVal = Math.min(255, Math.max(0, gray + sliderVal));
+            // Ordered Dither (Dotted grayscale)
+            let adjustedGray = Math.min(255, Math.max(0, gray + sliderVal));
+            
+            const pixelIndex = i / 4;
+            const x = pixelIndex % w;
+            const y = Math.floor(pixelIndex / w);
+            
+            const threshold = bayerMatrix8x8[y % 8][x % 8];
+            finalVal = adjustedGray > threshold ? 255 : 0;
           }
 
           data[i] = finalVal;
