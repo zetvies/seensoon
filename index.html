@@ -74,11 +74,29 @@
         height: 10px;
         width: 100%;
       }
+
+      /* Custom Slider */
+      .custom-slider::-webkit-slider-thumb {
+        appearance: none;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: black;
+        cursor: pointer;
+      }
+      .custom-slider::-moz-range-thumb {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: black;
+        cursor: pointer;
+        border: none;
+      }
     </style>
   </head>
 
   <body
-    class="flex flex-col items-center h-[100svh] w-screen overflow-hidden bg-white text-black font-helvetica select-none"
+    class="flex flex-col items-center h-[100svh] w-screen overflow-hidden bg-white text-black font-helvetica select-none overflow-x-hidden"
   >
     <!-- ===== HEADER ===== -->
     <header id="mainHeader" class="w-full pt-[6svh] pb-[2svh] flex-shrink-0">
@@ -162,64 +180,60 @@
         </div>
       </div>
 
-      <!-- Retake / Print buttons (above receipt) -->
+      <!-- Retake / Print buttons & Settings -->
       <div
-        id="btnRow"
-        class="hidden w-full max-w-[95svw] md:max-w-[420px] flex gap-3 mb-4"
+        id="settingsAndButtons"
+        class="w-full max-w-[95svw] md:max-w-[420px] px-2 flex-col gap-4 mt-6 pb-4"
       >
-        <button
-          id="btnRetake"
-          class="flex-1 bg-black text-white border-none text-2xl font-bold cursor-pointer hover:bg-neutral-800 h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Retake
-        </button>
-        <button
-          id="btnPrint"
-          class="flex-1 bg-black text-white border-none text-2xl font-bold cursor-pointer hover:bg-neutral-800 h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Print
-        </button>
-      </div>
+        <!-- Settings (shown after capture) -->
+        <div id="thresholdControl" class="hidden w-full flex-col">
+          <label class="block text-sm font-bold mb-1 tracking-wide"
+            >SETTINGS</label
+          >
 
-      <!-- Darkness Threshold Slider -->
-      <div
-        id="thresholdControl"
-        class="hidden w-full max-w-[95svw] md:max-w-[420px] flex-col items-center px-4 mb-6"
-      >
-        <!-- Mode Selector -->
-        <div class="flex bg-gray-100 p-1 rounded-full mb-4 w-full">
-          <button
-            id="modeStencil"
-            class="flex-1 py-1 px-4 rounded-full text-sm font-bold transition-all bg-black text-white"
+          <!-- Mode Selector -->
+          <div class="flex gap-4 items-center mb-6">
+            <button
+              id="modeStencil"
+              class="text-sm font-bold text-black border border-black px-2 py-0.5 uppercase tracking-wide"
+            >
+              STENCIL
+            </button>
+            <button id="modeGrayscale" class="text-sm font-bold text-gray-300">
+              GRAYSCALE
+            </button>
+          </div>
+
+          <label
+            for="thresholdSlider"
+            class="block text-sm font-bold mb-1 tracking-wide"
+            >DARKNESS THRESHOLD</label
           >
-            STENCIL
-          </button>
-          <button
-            id="modeGrayscale"
-            class="flex-1 py-1 px-4 rounded-full text-sm font-bold transition-all text-gray-500 hover:text-black"
-          >
-            GRAYSCALE
-          </button>
+          <div class="relative w-full h-[2px] bg-black mb-6 flex items-center">
+            <input
+              type="range"
+              id="thresholdSlider"
+              min="0"
+              max="255"
+              value="130"
+              class="absolute w-full appearance-none bg-transparent m-0 cursor-pointer z-10 h-6 custom-slider"
+            />
+          </div>
         </div>
 
-        <label
-          id="sliderLabel"
-          for="thresholdSlider"
-          class="block text-sm font-bold mb-2 uppercase"
-          >Darkness Threshold</label
-        >
-        <input
-          type="range"
-          id="thresholdSlider"
-          min="0"
-          max="255"
-          value="130"
-          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
-        />
-        <div class="flex justify-between w-full text-xs font-bold mt-1">
-          <span id="labelLeft">LIGHTER</span>
-          <span id="thresholdValue">130</span>
-          <span id="labelRight">DARKER</span>
+        <div id="btnRow" class="hidden w-full flex-col gap-3 mb-6">
+          <button
+            id="btnPrint"
+            class="w-full border-2 border-black bg-white text-black font-bold h-[5svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 tracking-widest uppercase"
+          >
+            PRINT
+          </button>
+          <button
+            id="btnRetake"
+            class="w-full bg-[#1b1a1c] text-white border-none font-bold h-[5svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 tracking-widest uppercase"
+          >
+            RETAKE
+          </button>
         </div>
       </div>
 
@@ -234,106 +248,12 @@
       <!-- Receipt Container -->
       <div
         id="receiptContainer"
-        class="hidden w-[420px] max-w-[95svw] bg-white shadow-2xl relative flex flex-col items-center"
+        class="hidden w-full max-w-[80svw] md:max-w-[420px] relative border-[2px] mb-[3svh] border-black"
       >
-        <!-- Receipt Content -->
-        <div class="p-5 pb-3 text-center border-t-4 border-black w-full">
-          <h1 class="text-4xl font-bold font-averia mb-1">POT BOY ARU</h1>
-          <h2 class="text-2xl italic font-bold font-averia mb-2">
-            SAMPLE TEST
-          </h2>
-          <p class="text-sm font-bold font-mono uppercase tracking-widest mb-4">
-            COME HUNGRY!
-          </p>
-
-          <!-- Decorative Graphic -->
-          <div class="flex justify-center gap-2 mb-4">
-            <img
-              src="./assets/icon.svg"
-              class="h-14 w-auto grayscale contrast-200"
-              alt="Icon"
-            />
-            <img
-              src="./assets/icon.svg"
-              class="h-14 w-auto grayscale contrast-200 transform -scale-x-100"
-              alt="Icon"
-            />
-          </div>
-
-          <!-- Dashed Line -->
-          <div class="w-full border-t-2 border-dashed border-black my-4"></div>
-
-          <!-- Processed Image Result -->
-          <div
-            class="relative w-full aspect-[4/3] bg-gray-100 border-2 border-black transform -rotate-1 shadow-sm mb-4 overflow-hidden"
-          >
-            <canvas
-              id="receiptCanvas"
-              class="w-full h-full object-cover"
-            ></canvas>
-          </div>
-
-          <div
-            class="text-left font-receipt text-sm font-semibold leading-tight space-y-1 mb-4"
-          >
-            <div class="flex justify-between">
-              <span>Your Cashier is: WEEJ</span>
-              <span>PBA, # 02</span>
-            </div>
-            <div>DATE: <span id="receiptDate">FRIDAY, APRIL 4</span></div>
-            <div>Hours: FRIDAY 12-7</div>
-            <div>SATURDAY 12-7</div>
-            <div>SUNDAY 1-6</div>
-          </div>
-
-          <!-- Dashed Line -->
-          <div class="w-full border-t-2 border-dashed border-black my-4"></div>
-
-          <div
-            class="flex justify-between font-receipt text-base font-bold mb-4"
-          >
-            <span>NO</span>
-            <span>RESULTS</span>
-            <span>AMT</span>
-          </div>
-
-          <div
-            class="font-receipt text-sm font-semibold text-left grid grid-cols-[24px_1fr_24px] gap-2 mb-6"
-          >
-            <div>01</div>
-            <div>PLACEHOLDER</div>
-            <div class="text-right">$</div>
-            <div>02</div>
-            <div>PLACEHOLDER</div>
-            <div class="text-right">$</div>
-            <div>03</div>
-            <div>PLACEHOLDER</div>
-            <div class="text-right">$</div>
-          </div>
-
-          <div class="text-center font-averia text-xl font-bold">
-            #We walk the talk,<br />
-            not only talk the talk
-          </div>
-        </div>
-
-        <div class="w-full border-t-2 border-black my-4"></div>
-
-        <div
-          class="text-center font-mono text-sm font-bold tracking-[0.2em] mb-4"
-        >
-          C&gt;O&gt;M&gt;E&gt;H&gt;U&gt;N&gt;G&gt;R&gt;Y
-        </div>
-
-        <div
-          class="text-right w-full font-receipt text-xs font-semibold mb-6 px-4"
-        >
-          <div class="font-bold mb-1">RSVP 0889-0992-9999</div>
-          <div>Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela</div>
-        </div>
-
-        <!-- Bottom Tear Effect -->
-        <div class="receipt-tear absolute -bottom-[10px] w-full"></div>
+        <canvas
+          id="receiptCanvas"
+          class="w-full h-auto aspect-[2/3] object-cover block"
+        ></canvas>
       </div>
     </main>
 
@@ -373,7 +293,7 @@
         class="text-right w-[90svw] mt-[5svh] text-[3.4svw] font-bold leading-snug"
       >
         <div class="text-[2.5svw]">
-          RSVP <span class="text-xs font-[2svw]">(0889-0992-9999)</span>
+          RSVP <span class="text-[2svw]">0889-0992-9999</span>
         </div>
         <div class="font-medium">
           Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela
@@ -400,7 +320,6 @@
       const btnRetake = document.getElementById("btnRetake");
       const btnRow = document.getElementById("btnRow");
       const thankYouMsg = document.getElementById("thankYouMsg");
-      const receiptDate = document.getElementById("receiptDate");
 
       let ws = null;
       let previewActive = false;
@@ -447,13 +366,6 @@
             break;
         }
       }
-
-      // Set Date
-      const now = new Date();
-      const options = { weekday: "long", month: "long", day: "numeric" };
-      receiptDate.textContent = now
-        .toLocaleDateString("en-US", options)
-        .toUpperCase();
 
       // Step 1: Submit Code
       // Start -> Preview
@@ -502,7 +414,7 @@
       // Step 3: Capture with frontend countdown
       btnCapture.addEventListener("click", () => {
         btnCapture.disabled = true;
-        btnCapture.textContent = "Please look at the camera...";
+        btnCapture.textContent = "CAPTURING...";
 
         // Run countdown in browser
         let count = 3;
@@ -579,7 +491,6 @@
 
         // 2. Clear UI
         videoContainer.classList.add("hidden");
-        mainHeader.classList.add("hidden");
         receiptContainer.classList.remove("hidden");
         receiptContainer.classList.add("flex");
         btnCapture.classList.add("hidden");
@@ -588,6 +499,9 @@
         document.getElementById("thresholdControl").classList.remove("hidden");
         document.getElementById("thresholdControl").classList.add("flex");
         processingOverlay.classList.add("hidden");
+
+        const mainFooter = document.getElementById("mainFooter");
+        mainFooter.classList.add("hidden");
 
         // Make page scrollable so receipt is fully visible
         document.body.classList.remove("overflow-hidden", "h-[100svh]");
@@ -599,10 +513,6 @@
       }
 
       const thresholdSlider = document.getElementById("thresholdSlider");
-      const thresholdValueLabel = document.getElementById("thresholdValue");
-      const sliderLabel = document.getElementById("sliderLabel");
-      const labelLeft = document.getElementById("labelLeft");
-      const labelRight = document.getElementById("labelRight");
 
       const modeStencil = document.getElementById("modeStencil");
       const modeGrayscale = document.getElementById("modeGrayscale");
@@ -613,38 +523,52 @@
       function setMode(mode) {
         currentMode = mode;
         if (mode === "stencil") {
-          modeStencil.classList.add("bg-black", "text-white");
-          modeStencil.classList.remove("text-gray-500");
-          modeGrayscale.classList.remove("bg-black", "text-white");
-          modeGrayscale.classList.add("text-gray-500");
+          modeStencil.classList.add(
+            "text-black",
+            "border",
+            "border-black",
+            "px-2",
+            "py-0.5",
+          );
+          modeStencil.classList.remove("text-gray-300");
+          modeGrayscale.classList.remove(
+            "text-black",
+            "border",
+            "border-black",
+            "px-2",
+            "py-0.5",
+          );
+          modeGrayscale.classList.add("text-gray-300");
 
-          sliderLabel.textContent = "Darkness Threshold";
-          labelLeft.textContent = "LIGHTER";
-          labelRight.textContent = "DARKER";
           thresholdSlider.min = 0;
           thresholdSlider.max = 255;
           thresholdSlider.value = 130;
-          thresholdValueLabel.textContent = 130;
         } else {
-          modeGrayscale.classList.add("bg-black", "text-white");
-          modeGrayscale.classList.remove("text-gray-500");
-          modeStencil.classList.remove("bg-black", "text-white");
-          modeStencil.classList.add("text-gray-500");
+          modeGrayscale.classList.add(
+            "text-black",
+            "border",
+            "border-black",
+            "px-2",
+            "py-0.5",
+          );
+          modeGrayscale.classList.remove("text-gray-300");
+          modeStencil.classList.remove(
+            "text-black",
+            "border",
+            "border-black",
+            "px-2",
+            "py-0.5",
+          );
+          modeStencil.classList.add("text-gray-300");
 
-          sliderLabel.textContent = "Brightness";
-          labelLeft.textContent = "DIM";
-          labelRight.textContent = "BRIGHT";
           thresholdSlider.min = -150;
           thresholdSlider.max = 150;
           thresholdSlider.value = 0;
-          thresholdValueLabel.textContent = 0;
         }
         applyFilters();
       }
 
       thresholdSlider.addEventListener("input", (e) => {
-        const val = e.target.value;
-        thresholdValueLabel.textContent = val;
         applyFilters();
       });
 
@@ -710,6 +634,10 @@
 
       // Retake — go back to camera capture
       btnRetake.addEventListener("click", async () => {
+        // Show main footer
+        const mainFooter = document.getElementById("mainFooter");
+        mainFooter.classList.remove("hidden");
+
         // Hide receipt and buttons
         receiptContainer.classList.add("hidden");
         btnRow.classList.add("hidden");
@@ -726,7 +654,6 @@
 
         // Show video and capture button
         videoContainer.classList.remove("hidden");
-        mainHeader.classList.remove("hidden");
         btnCapture.classList.remove("hidden");
         btnCapture.classList.add("flex");
         btnCapture.disabled = false;
@@ -760,131 +687,8 @@
           );
 
         try {
-          const receiptEl = document.getElementById("receiptContainer");
-
-          // Convert canvas to img (html2canvas struggles with canvas)
-          const canvasDataUrl = receiptCanvas.toDataURL("image/png");
-          const tempImg = document.createElement("img");
-          tempImg.src = canvasDataUrl;
-          tempImg.style.width = "100%";
-          tempImg.style.height = "100%";
-          tempImg.style.objectFit = "cover";
-          receiptCanvas.parentNode.replaceChild(tempImg, receiptCanvas);
-
-          if (ws && ws.readyState === 1)
-            ws.send(
-              JSON.stringify({
-                type: "log",
-                msg: "[PRINT] Generating receipt with native Canvas...",
-              }),
-            );
-
-          // --- CUSTOM CANVAS DRAWING ---
-          // We create a temporary canvas to draw the entire receipt manually
-          // This bypasses all html2canvas hanging issues.
-          const rCanvas = document.createElement("canvas");
-          rCanvas.width = 420; // Match CSS width
-          rCanvas.height = 840; // Increased to fit all content cleanly
-          const ctx = rCanvas.getContext("2d");
-
-          // White background
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, rCanvas.width, rCanvas.height);
-
-          // Border top
-          ctx.fillStyle = "#000000";
-          ctx.fillRect(20, 20, 380, 4);
-
-          // Text settings
-          ctx.textAlign = "center";
-
-          // Header
-          ctx.font = 'bold 36px "Averia Serif Libre", serif';
-          ctx.fillText("POT BOY ARU", 210, 60);
-
-          ctx.font = 'bold 24px "Averia Serif Libre", serif';
-          ctx.font = "italic " + ctx.font; // Make it italic
-          ctx.fillText("SAMPLE TEST", 210, 95);
-
-          ctx.font = "bold 16px monospace";
-          ctx.fillText("C O M E   H U N G R Y !", 210, 125);
-
-          // Dashed Line
-          const drawDashedLine = (y) => {
-            ctx.beginPath();
-            ctx.setLineDash([10, 10]);
-            ctx.moveTo(20, y);
-            ctx.lineTo(400, y);
-            ctx.stroke();
-            ctx.setLineDash([]); // Reset
-          };
-          drawDashedLine(150);
-
-          // The Photo
-          // receiptCanvas is 300x225. Let's draw it centered
-          // Wait, it should be drawn with a solid border
-          ctx.lineWidth = 2;
-          ctx.strokeRect(59, 169, 302, 227);
-          ctx.drawImage(receiptCanvas, 60, 170, 300, 225);
-
-          // Date & Cashier
-          ctx.textAlign = "left";
-          ctx.font = 'bold 16px "Averia Serif Libre", serif';
-          ctx.fillText("Your Cashier is: WEEJ         PBA, # 02", 40, 430);
-
-          const dateText = document.getElementById("receiptDate").innerText;
-          ctx.fillText("DATE: " + dateText, 40, 455);
-          ctx.fillText("Hours: FRIDAY 12-7", 40, 480);
-          ctx.fillText("       SATURDAY 12-7", 40, 500);
-          ctx.fillText("       SUNDAY 1-6", 40, 520);
-
-          drawDashedLine(545);
-
-          // Results Table
-          ctx.font = 'bold 16px "Averia Serif Libre", serif';
-          ctx.fillText("NO", 30, 575);
-          ctx.textAlign = "center";
-          ctx.fillText("RESULTS", 210, 575);
-          ctx.textAlign = "right";
-          ctx.fillText("AMT", 390, 575);
-
-          ctx.textAlign = "left";
-          ctx.font = "14px monospace";
-          ctx.fillText("01  PLACEHOLDER               $", 30, 600);
-          ctx.fillText("02  PLACEHOLDER               $", 30, 620);
-          ctx.fillText("03  PLACEHOLDER               $", 30, 640);
-
-          // Tagline
-          ctx.textAlign = "center";
-          ctx.font = 'bold 20px "Averia Serif Libre", serif';
-          ctx.fillText("#We walk the talk,", 210, 680);
-          ctx.fillText("not only talk the talk", 210, 705);
-
-          // Footer separator
-          ctx.fillStyle = "#000000";
-          ctx.fillRect(20, 725, 380, 2);
-
-          ctx.font = "bold 14px monospace";
-          ctx.fillText("C > O > M > E > H > U > N > G > R > Y", 210, 755);
-
-          ctx.font = 'bold 12px "Averia Serif Libre", serif';
-          ctx.fillText("RSVP 0889-0992-9999", 210, 785);
-          ctx.font = '12px "Averia Serif Libre", serif';
-          ctx.fillText(
-            "Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela",
-            210,
-            805,
-          );
-          // --- END CUSTOM DRAWING ---
-
-          const dataUrl = rCanvas.toDataURL("image/png");
-          if (ws && ws.readyState === 1)
-            ws.send(
-              JSON.stringify({
-                type: "log",
-                msg: "[PRINT] Native Canvas generated, size: " + dataUrl.length,
-              }),
-            );
+          // Just use the 2:3 canvas as is!
+          const dataUrl = receiptCanvas.toDataURL("image/png");
 
           console.log("[PRINT] Sending to server, size:", dataUrl.length);
           if (ws && ws.readyState === 1)
