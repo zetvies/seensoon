@@ -1,699 +1,881 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Potboy Demo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#e74c3c',
-                        'primary-dark': '#c0392b',
-                    },
-                    fontFamily: {
-                        'averia': ['"Averia Serif Libre"', 'serif'],
-                        'receipt': ['"Courier New"', 'Courier', 'monospace'],
-                    },
-                    backgroundImage: {
-                        'dashed-line': "url(\"data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='0' ry='0' stroke='black' stroke-width='2' stroke-dasharray='10%2c 10' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e\")",
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#e74c3c",
+              "primary-dark": "#c0392b",
+            },
+            fontFamily: {
+              averia: ['"Averia Serif Libre"', "serif"],
+              helvetica: [
+                '"Helvetica Neue"',
+                "Helvetica",
+                "Arial",
+                "sans-serif",
+              ],
+              receipt: ['"Courier New"', "Courier", "monospace"],
+            },
+            backgroundImage: {
+              "dashed-line":
+                "url(\"data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='0' ry='0' stroke='black' stroke-width='2' stroke-dasharray='10%2c 10' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e\")",
+            },
+          },
+        },
+      };
     </script>
     <style>
-        @font-face {
-            font-family: 'Averia Serif Libre';
-            src: url('./assets/fonts/AveriaSerifLibre-Regular.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
+      @font-face {
+        font-family: "Averia Serif Libre";
+        src: url("./assets/fonts/AveriaSerifLibre-Regular.ttf")
+          format("truetype");
+        font-weight: normal;
+        font-style: normal;
+      }
 
-        @font-face {
-            font-family: 'Averia Serif Libre';
-            src: url('./assets/fonts/AveriaSerifLibre-Bold.ttf') format('truetype');
-            font-weight: bold;
-            font-style: normal;
-        }
+      @font-face {
+        font-family: "Averia Serif Libre";
+        src: url("./assets/fonts/AveriaSerifLibre-Bold.ttf") format("truetype");
+        font-weight: bold;
+        font-style: normal;
+      }
 
-        .receipt-tear {
-            background-image: radial-gradient(circle at 10px 0, transparent 10px, white 11px);
-            background-size: 20px 20px;
-            background-repeat: repeat-x;
-            height: 10px;
-            width: 100%;
-        }
+      @font-face {
+        font-family: "Helvetica Neue";
+        src: url("./assets/fonts/Helvetica Neue LT Std 65 Medium.otf")
+          format("opentype");
+        font-weight: 500;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Helvetica Neue";
+        src: url("./assets/fonts/Helvetica Neue LT Std 75 Bold.otf")
+          format("opentype");
+        font-weight: bold;
+        font-style: normal;
+      }
+
+      .receipt-tear {
+        background-image: radial-gradient(
+          circle at 10px 0,
+          transparent 10px,
+          white 11px
+        );
+        background-size: 20px 20px;
+        background-repeat: repeat-x;
+        height: 10px;
+        width: 100%;
+      }
     </style>
-</head>
+  </head>
 
-<body
-    class="flex flex-col items-center justify-evenly h-[100svh] py-[5svh] w-screen overflow-hidden p-[1svh] bg-white text-[#333] font-averia select-none">
-
-    <div id="mainHeader" class="h-[15svh] flex justify-center items-center max-w-[90svw]">
-        <img src="./assets/potboy-aru.svg" alt="Potboy Aru" class="h-full w-auto object-contain max-h-full">
-    </div>
+  <body
+    class="flex flex-col items-center h-[100svh] w-screen overflow-hidden bg-white text-black font-helvetica select-none"
+  >
+    <!-- ===== HEADER ===== -->
+    <header id="mainHeader" class="w-full pt-[6svh] pb-[2svh] flex-shrink-0">
+      <div class="flex justify-center items-center">
+        <img
+          src="./assets/logo.svg"
+          alt="Potboy Aru"
+          class="h-[4svh] w-auto object-contain"
+        />
+      </div>
+      <hr class="mt-3 border-t-2 border-black" />
+    </header>
 
     <!-- html2canvas for receipt printing -->
     <script src="/assets/html2canvas.min.js"></script>
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col items-center justify-evenly w-full max-w-[90svw] relative">
+    <!-- ===== CONTENT ===== -->
+    <main
+      class="flex-1 flex flex-col items-center justify-start w-full max-w-[90svw] relative overflow-hidden"
+    >
+      <!-- Default Character Image -->
+      <div id="imageContainer" class="h-[55svh] flex justify-center pt-[10svh]">
+        <img
+          id="characterImg"
+          src="./assets/icon.svg"
+          alt="Potboy"
+          class="max-h-[45svh] max-w-[80svw] object-contain"
+        />
+      </div>
 
-        <!-- Default Character Image -->
-        <img id="characterImg" src="./assets/potboy.svg" alt="Potboy" class="h-[40svh] max-w-[90svw] object-contain">
+      <!-- Video Container (Browser Camera) -->
+      <div
+        id="videoContainer"
+        class="w-auto max-w-[90svw] h-[55svh] aspect-[4/3] bg-black rounded-2xl overflow-hidden relative hidden"
+      >
+        <video
+          id="cameraVideo"
+          class="w-full h-full object-cover"
+          autoplay
+          playsinline
+          muted
+        ></video>
+        <div
+          id="countdown"
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8rem] text-white font-bold drop-shadow-md hidden pointer-events-none z-10 transition-opacity"
+        >
+          3
+        </div>
+        <!-- Processing Overlay -->
+        <div
+          id="processingOverlay"
+          class="absolute inset-0 bg-black/80 flex items-center justify-center z-20 hidden"
+        >
+          <span class="text-white text-2xl font-bold animate-pulse"
+            >Processing image...</span
+          >
+        </div>
+      </div>
 
-        <!-- Video Container (Browser Camera) -->
-        <div id="videoContainer"
-            class="w-auto max-w-[90svw] h-[40svh] aspect-[4/3] bg-black rounded-2xl overflow-hidden relative hidden">
-            <video id="cameraVideo" class="w-full h-full object-cover" autoplay playsinline muted></video>
-            <div id="countdown"
-                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8rem] text-white font-bold drop-shadow-md hidden pointer-events-none z-10 transition-opacity">
-                3</div>
-            <!-- Processing Overlay -->
-            <div id="processingOverlay"
-                class="absolute inset-0 bg-black/80 flex items-center justify-center z-20 hidden">
-                <span class="text-white text-2xl font-bold animate-pulse">Processing image...</span>
-            </div>
+      <!-- Retake / Print buttons (above receipt) -->
+      <div
+        id="btnRow"
+        class="hidden w-full max-w-[95svw] md:max-w-[420px] flex gap-3 mb-4"
+      >
+        <button
+          id="btnRetake"
+          class="flex-1 bg-black text-white border-none text-2xl font-bold cursor-pointer hover:bg-neutral-800 h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Retake
+        </button>
+        <button
+          id="btnPrint"
+          class="flex-1 bg-black text-white border-none text-2xl font-bold cursor-pointer hover:bg-neutral-800 h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Print
+        </button>
+      </div>
+
+      <!-- Darkness Threshold Slider -->
+      <div
+        id="thresholdControl"
+        class="hidden w-full max-w-[95svw] md:max-w-[420px] flex-col items-center px-4 mb-6"
+      >
+        <!-- Mode Selector -->
+        <div class="flex bg-gray-100 p-1 rounded-full mb-4 w-full">
+          <button
+            id="modeStencil"
+            class="flex-1 py-1 px-4 rounded-full text-sm font-bold transition-all bg-black text-white"
+          >
+            STENCIL
+          </button>
+          <button
+            id="modeGrayscale"
+            class="flex-1 py-1 px-4 rounded-full text-sm font-bold transition-all text-gray-500 hover:text-black"
+          >
+            GRAYSCALE
+          </button>
         </div>
 
-        <!-- Retake / Print buttons (above receipt) -->
-        <div id="btnRow" class="hidden w-full max-w-[95svw] md:max-w-[420px] flex gap-3 mb-4">
-            <button id="btnRetake"
-                class="flex-1 bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Retake</button>
-            <button id="btnPrint"
-                class="flex-1 bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark h-[7svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Print</button>
+        <label
+          id="sliderLabel"
+          for="thresholdSlider"
+          class="block text-sm font-bold mb-2 uppercase"
+          >Darkness Threshold</label
+        >
+        <input
+          type="range"
+          id="thresholdSlider"
+          min="0"
+          max="255"
+          value="130"
+          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+        />
+        <div class="flex justify-between w-full text-xs font-bold mt-1">
+          <span id="labelLeft">LIGHTER</span>
+          <span id="thresholdValue">130</span>
+          <span id="labelRight">DARKER</span>
+        </div>
+      </div>
+
+      <!-- Thank you message (shown after print) -->
+      <div
+        id="thankYouMsg"
+        class="hidden text-center font-averia text-2xl font-bold text-black mb-4"
+      >
+        Thank you for coming!
+      </div>
+
+      <!-- Receipt Container -->
+      <div
+        id="receiptContainer"
+        class="hidden w-[420px] max-w-[95svw] bg-white shadow-2xl relative flex flex-col items-center"
+      >
+        <!-- Receipt Content -->
+        <div class="p-5 pb-3 text-center border-t-4 border-black w-full">
+          <h1 class="text-4xl font-bold font-averia mb-1">POT BOY ARU</h1>
+          <h2 class="text-2xl italic font-bold font-averia mb-2">
+            SAMPLE TEST
+          </h2>
+          <p class="text-sm font-bold font-mono uppercase tracking-widest mb-4">
+            COME HUNGRY!
+          </p>
+
+          <!-- Decorative Graphic -->
+          <div class="flex justify-center gap-2 mb-4">
+            <img
+              src="./assets/icon.svg"
+              class="h-14 w-auto grayscale contrast-200"
+              alt="Icon"
+            />
+            <img
+              src="./assets/icon.svg"
+              class="h-14 w-auto grayscale contrast-200 transform -scale-x-100"
+              alt="Icon"
+            />
+          </div>
+
+          <!-- Dashed Line -->
+          <div class="w-full border-t-2 border-dashed border-black my-4"></div>
+
+          <!-- Processed Image Result -->
+          <div
+            class="relative w-full aspect-[4/3] bg-gray-100 border-2 border-black transform -rotate-1 shadow-sm mb-4 overflow-hidden"
+          >
+            <canvas
+              id="receiptCanvas"
+              class="w-full h-full object-cover"
+            ></canvas>
+          </div>
+
+          <div
+            class="text-left font-receipt text-sm font-semibold leading-tight space-y-1 mb-4"
+          >
+            <div class="flex justify-between">
+              <span>Your Cashier is: WEEJ</span>
+              <span>PBA, # 02</span>
+            </div>
+            <div>DATE: <span id="receiptDate">FRIDAY, APRIL 4</span></div>
+            <div>Hours: FRIDAY 12-7</div>
+            <div>SATURDAY 12-7</div>
+            <div>SUNDAY 1-6</div>
+          </div>
+
+          <!-- Dashed Line -->
+          <div class="w-full border-t-2 border-dashed border-black my-4"></div>
+
+          <div
+            class="flex justify-between font-receipt text-base font-bold mb-4"
+          >
+            <span>NO</span>
+            <span>RESULTS</span>
+            <span>AMT</span>
+          </div>
+
+          <div
+            class="font-receipt text-sm font-semibold text-left grid grid-cols-[24px_1fr_24px] gap-2 mb-6"
+          >
+            <div>01</div>
+            <div>PLACEHOLDER</div>
+            <div class="text-right">$</div>
+            <div>02</div>
+            <div>PLACEHOLDER</div>
+            <div class="text-right">$</div>
+            <div>03</div>
+            <div>PLACEHOLDER</div>
+            <div class="text-right">$</div>
+          </div>
+
+          <div class="text-center font-averia text-xl font-bold">
+            #We walk the talk,<br />
+            not only talk the talk
+          </div>
         </div>
 
-        <!-- Darkness Threshold Slider -->
-        <div id="thresholdControl" class="hidden w-full max-w-[95svw] md:max-w-[420px] flex-col items-center px-4 mb-6">
-            <!-- Mode Selector -->
-            <div class="flex bg-gray-100 p-1 rounded-full mb-4 w-full">
-                <button id="modeStencil" class="flex-1 py-1 px-4 rounded-full text-sm font-bold transition-all bg-primary text-white">STENCIL</button>
-                <button id="modeGrayscale" class="flex-1 py-1 px-4 rounded-full text-sm font-bold transition-all text-gray-500 hover:text-black">GRAYSCALE</button>
-            </div>
+        <div class="w-full border-t-2 border-black my-4"></div>
 
-            <label id="sliderLabel" for="thresholdSlider" class="block text-sm font-bold mb-2 uppercase">Darkness Threshold</label>
-            <input type="range" id="thresholdSlider" min="0" max="255" value="130" 
-                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
-            <div class="flex justify-between w-full text-xs font-bold mt-1">
-                <span id="labelLeft">LIGHTER</span>
-                <span id="thresholdValue">130</span>
-                <span id="labelRight">DARKER</span>
-            </div>
+        <div
+          class="text-center font-mono text-sm font-bold tracking-[0.2em] mb-4"
+        >
+          C&gt;O&gt;M&gt;E&gt;H&gt;U&gt;N&gt;G&gt;R&gt;Y
         </div>
 
-        <!-- Thank you message (shown after print) -->
-        <div id="thankYouMsg" class="hidden text-center font-averia text-2xl font-bold text-primary mb-4">Thank you for
-            coming!</div>
-
-        <!-- Receipt Container -->
-        <div id="receiptContainer"
-            class="hidden w-[420px] max-w-[95svw] bg-white shadow-2xl relative flex flex-col items-center">
-            <!-- Receipt Content -->
-            <div class="p-5 pb-3 text-center border-t-4 border-black w-full">
-                <h1 class="text-4xl font-bold font-averia mb-1">POT BOY ARU</h1>
-                <h2 class="text-2xl italic font-bold font-averia mb-2">SAMPLE TEST</h2>
-                <p class="text-sm font-bold font-mono uppercase tracking-widest mb-4">COME HUNGRY!</p>
-
-                <!-- Decorative Graphic -->
-                <div class="flex justify-center gap-2 mb-4">
-                    <img src="./assets/potboy.svg" class="h-14 w-auto grayscale contrast-200" alt="Icon">
-                    <img src="./assets/potboy.svg" class="h-14 w-auto grayscale contrast-200 transform -scale-x-100"
-                        alt="Icon">
-                </div>
-
-                <!-- Dashed Line -->
-                <div class="w-full border-t-2 border-dashed border-black my-4"></div>
-
-                <!-- Processed Image Result -->
-                <div
-                    class="relative w-full aspect-[4/3] bg-gray-100 border-2 border-black transform -rotate-1 shadow-sm mb-4 overflow-hidden">
-                    <canvas id="receiptCanvas" class="w-full h-full object-cover"></canvas>
-                </div>
-
-                <div class="text-left font-receipt text-sm font-semibold leading-tight space-y-1 mb-4">
-                    <div class="flex justify-between">
-                        <span>Your Cashier is: WEEJ</span>
-                        <span>PBA, # 02</span>
-                    </div>
-                    <div>DATE: <span id="receiptDate">FRIDAY, APRIL 4</span></div>
-                    <div>Hours: FRIDAY 12-7</div>
-                    <div> SATURDAY 12-7</div>
-                    <div> SUNDAY 1-6</div>
-                </div>
-
-                <!-- Dashed Line -->
-                <div class="w-full border-t-2 border-dashed border-black my-4"></div>
-
-                <div class="flex justify-between font-receipt text-base font-bold mb-4">
-                    <span>NO</span>
-                    <span>RESULTS</span>
-                    <span>AMT</span>
-                </div>
-
-                <div class="font-receipt text-sm font-semibold text-left grid grid-cols-[24px_1fr_24px] gap-2 mb-6">
-                    <div>01</div>
-                    <div>PLACEHOLDER</div>
-                    <div class="text-right">$</div>
-                    <div>02</div>
-                    <div>PLACEHOLDER</div>
-                    <div class="text-right">$</div>
-                    <div>03</div>
-                    <div>PLACEHOLDER</div>
-                    <div class="text-right">$</div>
-                </div>
-
-                <div class="text-center font-averia text-xl font-bold">
-                    #We walk the talk,<br>
-                    not only talk the talk
-                </div>
-            </div>
-
-            <div class="w-full border-t-2 border-black my-4"></div>
-
-            <div class="text-center font-mono text-sm font-bold tracking-[0.2em] mb-4">
-                C&gt;O&gt;M&gt;E&gt;H&gt;U&gt;N&gt;G&gt;R&gt;Y
-            </div>
-
-            <div class="text-center font-receipt text-xs font-semibold mb-6 px-4">
-                <div class="font-bold mb-1">RSVP 0889-0992-9999</div>
-                <div>Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela</div>
-            </div>
-
-            <!-- Bottom Tear Effect -->
-            <div class="receipt-tear absolute -bottom-[10px] w-full"></div>
+        <div
+          class="text-right w-full font-receipt text-xs font-semibold mb-6 px-4"
+        >
+          <div class="font-bold mb-1">RSVP 0889-0992-9999</div>
+          <div>Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela</div>
         </div>
 
+        <!-- Bottom Tear Effect -->
+        <div class="receipt-tear absolute -bottom-[10px] w-full"></div>
+      </div>
+    </main>
 
-        <!-- Controls -->
-        <div class="w-full flex flex-col items-center gap-[2svh] z-30">
-            <!-- Step 1: Auth -->
-            <div id="stepAuth" class="contents">
-                <input type="text" id="codeInput" placeholder="Please enter code..."
-                    oninput="this.value = this.value.toUpperCase()"
-                    class="border-2 mt-[4svh] border-primary rounded-lg text-xl w-full max-w-[90svw] md:max-w-[30svw] h-[8svh] text-center text-primary placeholder-primary/50 flex items-center justify-center outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="btnSubmit"
-                    class="bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 mt-[1svh]">Submit</button>
-            </div>
+    <!-- ===== FOOTER ===== -->
+    <footer
+      id="mainFooter"
+      class="w-full px-6 pb-5 pt-3 flex-shrink-0 flex flex-col items-center gap-3"
+    >
+      <!-- Controls -->
+      <div class="w-full flex flex-col items-center gap-[2svh] z-30">
+        <!-- Start Button -->
+        <button
+          id="btnStart"
+          class="flex bg-black font text-white border-none text-[3svh] cursor-pointer hover:bg-neutral-800 w-full max-w-[90svw] md:max-w-[30svw] py-[.5svh] items-center justify-center transition-transform active:scale-95 tracking-widest uppercase"
+        >
+          START
+        </button>
 
-            <!-- Step 2: Start -->
-            <button id="btnStart"
-                class="hidden bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 mt-[1svh]">Start</button>
-
-            <!-- Step 3: Capture -->
-            <button id="btnCapture"
-                class="hidden bg-primary text-white border-none rounded-full text-2xl font-bold cursor-pointer hover:bg-primary-dark w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Capture</button>
-            <div id="captureHint" class="hidden text-primary font-bold animate-pulse text-lg">Please look at the
-                camera...</div>
+        <!-- Capture -->
+        <button
+          id="btnCapture"
+          class="hidden bg-black text-white border-none text-2xl font-bold cursor-pointer hover:bg-neutral-800 w-full max-w-[90svw] md:max-w-[30svw] h-[9svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed tracking-widest uppercase"
+        >
+          CAPTURE
+        </button>
+        <div
+          id="captureHint"
+          class="hidden text-black font-bold animate-pulse text-lg"
+        >
+          Please look at the camera...
         </div>
-    </div>
+      </div>
+
+      <!-- RSVP Info -->
+      <div
+        id="footerInfo"
+        class="text-right w-[90svw] mt-[5svh] text-[3.4svw] font-bold leading-snug"
+      >
+        <div class="text-[2.5svw]">
+          RSVP <span class="text-xs font-[2svw]">(0889-0992-9999)</span>
+        </div>
+        <div class="font-medium">
+          Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela
+        </div>
+      </div>
+    </footer>
 
     <script>
-        // State elements
-        const characterImg = document.getElementById('characterImg');
-        const videoContainer = document.getElementById('videoContainer');
-        const cameraVideo = document.getElementById('cameraVideo');
-        const receiptCanvas = document.getElementById('receiptCanvas');
-        const countdownEl = document.getElementById('countdown');
-        const processingOverlay = document.getElementById('processingOverlay');
-        const receiptContainer = document.getElementById('receiptContainer');
-        const mainHeader = document.getElementById('mainHeader');
+      // State elements
+      const characterImg = document.getElementById("characterImg");
+      const videoContainer = document.getElementById("videoContainer");
+      const cameraVideo = document.getElementById("cameraVideo");
+      const receiptCanvas = document.getElementById("receiptCanvas");
+      const countdownEl = document.getElementById("countdown");
+      const processingOverlay = document.getElementById("processingOverlay");
+      const receiptContainer = document.getElementById("receiptContainer");
+      const mainHeader = document.getElementById("mainHeader");
 
-        const stepAuth = document.getElementById('stepAuth');
-        const codeInput = document.getElementById('codeInput');
-        const btnSubmit = document.getElementById('btnSubmit');
+      const btnStart = document.getElementById("btnStart");
+      const btnCapture = document.getElementById("btnCapture");
+      const captureHint = document.getElementById("captureHint");
+      const btnPrint = document.getElementById("btnPrint");
+      const btnRetake = document.getElementById("btnRetake");
+      const btnRow = document.getElementById("btnRow");
+      const thankYouMsg = document.getElementById("thankYouMsg");
+      const receiptDate = document.getElementById("receiptDate");
 
-        const btnStart = document.getElementById('btnStart');
-        const btnCapture = document.getElementById('btnCapture');
-        const captureHint = document.getElementById('captureHint');
-        const btnPrint = document.getElementById('btnPrint');
-        const btnRetake = document.getElementById('btnRetake');
-        const btnRow = document.getElementById('btnRow');
-        const thankYouMsg = document.getElementById('thankYouMsg');
-        const receiptDate = document.getElementById('receiptDate');
+      let ws = null;
+      let previewActive = false;
+      let originalFrameData = null; // Store raw capture for re-processing
+      let currentMode = "stencil"; // 'stencil' or 'grayscale'
+      let cameraStream = null; // MediaStream from getUserMedia
 
-        let ws = null;
-        let previewActive = false;
-        let originalFrameData = null; // Store raw capture for re-processing
-        let currentMode = 'stencil'; // 'stencil' or 'grayscale'
-        let cameraStream = null; // MediaStream from getUserMedia
+      // Image slideshow (cycle image-1.png to image-5.png every 4s)
+      const slideshowImages = [
+        { src: "./assets/image-1.png", height: "25svh" },
+        { src: "./assets/image-2.png", height: "45svh" },
+        { src: "./assets/image-3.png", height: "45svh" },
+        { src: "./assets/image-4.png", height: "45svh" },
+        { src: "./assets/image-5.png", height: "7svh" },
+      ];
+      let slideshowIndex = 0;
+      // Apply initial height
+      characterImg.style.maxHeight = slideshowImages[0].height;
+      let slideshowInterval = setInterval(() => {
+        slideshowIndex = (slideshowIndex + 1) % slideshowImages.length;
+        characterImg.src = slideshowImages[slideshowIndex].src;
+        characterImg.style.maxHeight = slideshowImages[slideshowIndex].height;
+      }, 4000);
 
-        // WebSocket Setup
-        function connectWS() {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+      // WebSocket Setup
+      function connectWS() {
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                handleWSMessage(data);
-            };
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          handleWSMessage(data);
+        };
 
-            ws.onclose = () => {
-                console.log('WS closed, reconnecting...');
-                setTimeout(connectWS, 2000);
-            };
+        ws.onclose = () => {
+          console.log("WS closed, reconnecting...");
+          setTimeout(connectWS, 2000);
+        };
+      }
+      connectWS();
+
+      function handleWSMessage(data) {
+        console.log("WS Data:", data);
+        switch (data.type) {
+          case "countdown":
+            updateCountdown(data.value);
+            break;
+          case "capture_start":
+            showProcessing();
+            break;
+          case "capture_done":
+            processAndShowReceipt();
+            break;
         }
-        connectWS();
+      }
 
-        function handleWSMessage(data) {
-            console.log("WS Data:", data);
-            switch (data.type) {
-                case 'countdown':
-                    updateCountdown(data.value);
-                    break;
-                case 'capture_start':
-                    showProcessing();
-                    break;
-                case 'capture_done':
-                    processAndShowReceipt();
-                    break;
-            }
+      // Set Date
+      const now = new Date();
+      const options = { weekday: "long", month: "long", day: "numeric" };
+      receiptDate.textContent = now
+        .toLocaleDateString("en-US", options)
+        .toUpperCase();
+
+      // Step 1: Submit Code
+      // Start -> Preview
+      btnStart.addEventListener("click", async () => {
+        btnStart.disabled = true;
+        btnStart.textContent = "Opening camera...";
+        clearInterval(slideshowInterval);
+
+        try {
+          // Use browser camera directly via getUserMedia
+          console.log("[CAMERA] Requesting camera access...");
+          cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: "user",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+            audio: false,
+          });
+          console.log("[CAMERA] Got stream, assigning to video element...");
+          cameraVideo.srcObject = cameraStream;
+
+          // Wait for the video to actually start playing
+          await cameraVideo.play();
+          console.log("[CAMERA] Video playing, transitioning UI...");
+
+          btnStart.classList.add("hidden");
+          btnStart.classList.remove("flex");
+          characterImg.classList.add("hidden");
+
+          videoContainer.classList.remove("hidden");
+          videoContainer.classList.add("flex");
+
+          btnCapture.classList.remove("hidden");
+          btnCapture.classList.add("flex");
+          previewActive = true;
+          console.log("[CAMERA] Preview active!");
+        } catch (e) {
+          console.error("[CAMERA] Error:", e);
+          alert("Could not access camera: " + e.message);
         }
+        btnStart.textContent = "Start";
+        btnStart.disabled = false;
+      });
 
-        // Set Date
-        const now = new Date();
-        const options = { weekday: 'long', month: 'long', day: 'numeric' };
-        receiptDate.textContent = now.toLocaleDateString('en-US', options).toUpperCase();
+      // Step 3: Capture with frontend countdown
+      btnCapture.addEventListener("click", () => {
+        btnCapture.disabled = true;
+        btnCapture.textContent = "Please look at the camera...";
 
-        // Step 1: Submit Code
-        btnSubmit.addEventListener('click', () => {
-            const code = codeInput.value.trim().toUpperCase();
-            if (code === 'POTBOY') {
-                goToStart();
-            } else {
-                alert('Invalid Code (Try "POTBOY")');
-                codeInput.classList.remove('border-primary');
-                codeInput.classList.add('border-black');
-                setTimeout(() => {
-                    codeInput.classList.remove('border-black');
-                    codeInput.classList.add('border-primary');
-                }, 500);
-            }
-        });
+        // Run countdown in browser
+        let count = 3;
+        countdownEl.textContent = count;
+        countdownEl.classList.remove("hidden");
+        countdownEl.classList.add("block");
 
-        function goToStart() {
-            stepAuth.classList.remove('contents');
-            stepAuth.classList.add('hidden');
-            btnStart.classList.remove('hidden');
-            btnStart.classList.add('flex');
-        }
-
-        // Step 2: Start -> Preview
-        btnStart.addEventListener('click', async () => {
-            btnStart.disabled = true;
-            btnStart.textContent = 'Opening camera...';
-
-            try {
-                // Use browser camera directly via getUserMedia
-                console.log('[CAMERA] Requesting camera access...');
-                cameraStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: false
-                });
-                console.log('[CAMERA] Got stream, assigning to video element...');
-                cameraVideo.srcObject = cameraStream;
-
-                // Wait for the video to actually start playing
-                await cameraVideo.play();
-                console.log('[CAMERA] Video playing, transitioning UI...');
-
-                btnStart.classList.add('hidden');
-                btnStart.classList.remove('flex');
-                characterImg.classList.add('hidden');
-
-                videoContainer.classList.remove('hidden');
-                videoContainer.classList.add('flex');
-
-                btnCapture.classList.remove('hidden');
-                btnCapture.classList.add('flex');
-                previewActive = true;
-                console.log('[CAMERA] Preview active!');
-            } catch (e) {
-                console.error('[CAMERA] Error:', e);
-                alert('Could not access camera: ' + e.message);
-            }
-            btnStart.textContent = 'Start';
-            btnStart.disabled = false;
-        });
-
-        // Step 3: Capture with frontend countdown
-        btnCapture.addEventListener('click', () => {
-            btnCapture.disabled = true;
-            btnCapture.textContent = "Please look at the camera...";
-
-            // Run countdown in browser
-            let count = 3;
+        const interval = setInterval(async () => {
+          count--;
+          if (count > 0) {
             countdownEl.textContent = count;
-            countdownEl.classList.remove('hidden');
-            countdownEl.classList.add('block');
+          } else {
+            clearInterval(interval);
+            countdownEl.classList.add("hidden");
+            countdownEl.classList.remove("block");
 
-            const interval = setInterval(async () => {
-                count--;
-                if (count > 0) {
-                    countdownEl.textContent = count;
-                } else {
-                    clearInterval(interval);
-                    countdownEl.classList.add('hidden');
-                    countdownEl.classList.remove('block');
+            // Show processing overlay
+            processingOverlay.classList.remove("hidden");
 
-                    // Show processing overlay
-                    processingOverlay.classList.remove('hidden');
+            // Capture frame directly from browser video
+            processAndShowReceipt();
+          }
+        }, 1000);
+      });
 
-                    // Capture frame directly from browser video
-                    processAndShowReceipt();
-                }
-            }, 1000);
-        });
+      function showProcessing() {
+        processingOverlay.classList.remove("hidden");
+      }
 
-        function showProcessing() {
-            processingOverlay.classList.remove('hidden');
+      function processAndShowReceipt() {
+        // 1. Capture current frame from browser camera video
+        receiptCanvas.width = 300;
+        receiptCanvas.height = 225;
+        const ctx = receiptCanvas.getContext("2d");
+        const w = receiptCanvas.width;
+        const h = receiptCanvas.height;
+
+        ctx.drawImage(cameraVideo, 0, 0, w, h);
+
+        // Stop the camera stream after capture
+        stopCamera();
+
+        // Store original pixels so we can re-threshold without losing detail
+        originalFrameData = ctx.getImageData(0, 0, w, h);
+
+        // Initial render
+        applyFilters();
+
+        // 2. Clear UI
+        videoContainer.classList.add("hidden");
+        mainHeader.classList.add("hidden");
+        receiptContainer.classList.remove("hidden");
+        receiptContainer.classList.add("flex");
+        btnCapture.classList.add("hidden");
+        btnRow.classList.remove("hidden");
+        btnRow.classList.add("flex");
+        document.getElementById("thresholdControl").classList.remove("hidden");
+        document.getElementById("thresholdControl").classList.add("flex");
+        processingOverlay.classList.add("hidden");
+
+        // Make page scrollable so receipt is fully visible
+        document.body.classList.remove("overflow-hidden", "h-[100svh]");
+        document.body.classList.add(
+          "overflow-y-auto",
+          "min-h-[100svh]",
+          "h-auto",
+        );
+      }
+
+      const thresholdSlider = document.getElementById("thresholdSlider");
+      const thresholdValueLabel = document.getElementById("thresholdValue");
+      const sliderLabel = document.getElementById("sliderLabel");
+      const labelLeft = document.getElementById("labelLeft");
+      const labelRight = document.getElementById("labelRight");
+
+      const modeStencil = document.getElementById("modeStencil");
+      const modeGrayscale = document.getElementById("modeGrayscale");
+
+      modeStencil.addEventListener("click", () => setMode("stencil"));
+      modeGrayscale.addEventListener("click", () => setMode("grayscale"));
+
+      function setMode(mode) {
+        currentMode = mode;
+        if (mode === "stencil") {
+          modeStencil.classList.add("bg-black", "text-white");
+          modeStencil.classList.remove("text-gray-500");
+          modeGrayscale.classList.remove("bg-black", "text-white");
+          modeGrayscale.classList.add("text-gray-500");
+
+          sliderLabel.textContent = "Darkness Threshold";
+          labelLeft.textContent = "LIGHTER";
+          labelRight.textContent = "DARKER";
+          thresholdSlider.min = 0;
+          thresholdSlider.max = 255;
+          thresholdSlider.value = 130;
+          thresholdValueLabel.textContent = 130;
+        } else {
+          modeGrayscale.classList.add("bg-black", "text-white");
+          modeGrayscale.classList.remove("text-gray-500");
+          modeStencil.classList.remove("bg-black", "text-white");
+          modeStencil.classList.add("text-gray-500");
+
+          sliderLabel.textContent = "Brightness";
+          labelLeft.textContent = "DIM";
+          labelRight.textContent = "BRIGHT";
+          thresholdSlider.min = -150;
+          thresholdSlider.max = 150;
+          thresholdSlider.value = 0;
+          thresholdValueLabel.textContent = 0;
+        }
+        applyFilters();
+      }
+
+      thresholdSlider.addEventListener("input", (e) => {
+        const val = e.target.value;
+        thresholdValueLabel.textContent = val;
+        applyFilters();
+      });
+
+      function applyFilters() {
+        if (!originalFrameData) return;
+
+        const ctx = receiptCanvas.getContext("2d");
+        const w = receiptCanvas.width;
+        const h = receiptCanvas.height;
+        const sliderVal = parseInt(thresholdSlider.value);
+
+        let imageData = new ImageData(
+          new Uint8ClampedArray(originalFrameData.data),
+          originalFrameData.width,
+          originalFrameData.height,
+        );
+        let data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const a = data[i + 3];
+
+          // If pixel is fully transparent (alpha=0), treat it as white
+          if (a === 0) {
+            data[i] = 255;
+            data[i + 1] = 255;
+            data[i + 2] = 255;
+            data[i + 3] = 255;
+            continue;
+          }
+
+          // Calculate grayscale
+          let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+          let finalVal;
+          if (currentMode === "stencil") {
+            // Stencil: Pure black/white based on threshold
+            finalVal = gray < sliderVal ? 0 : 255;
+          } else {
+            // Grayscale: Adjust brightness
+            finalVal = Math.min(255, Math.max(0, gray + sliderVal));
+          }
+
+          data[i] = finalVal;
+          data[i + 1] = finalVal;
+          data[i + 2] = finalVal;
+          data[i + 3] = 255;
         }
 
-        function processAndShowReceipt() {
-            // 1. Capture current frame from browser camera video
-            receiptCanvas.width = 300;
-            receiptCanvas.height = 225;
-            const ctx = receiptCanvas.getContext('2d');
-            const w = receiptCanvas.width;
-            const h = receiptCanvas.height;
+        ctx.putImageData(imageData, 0, 0);
+      }
 
-            ctx.drawImage(cameraVideo, 0, 0, w, h);
-
-            // Stop the camera stream after capture
-            stopCamera();
-
-            // Store original pixels so we can re-threshold without losing detail
-            originalFrameData = ctx.getImageData(0, 0, w, h);
-            
-            // Initial render
-            applyFilters();
-
-            // 2. Clear UI
-            videoContainer.classList.add('hidden');
-            mainHeader.classList.add('hidden');
-            receiptContainer.classList.remove('hidden');
-            receiptContainer.classList.add('flex');
-            btnCapture.classList.add('hidden');
-            btnRow.classList.remove('hidden');
-            btnRow.classList.add('flex');
-            document.getElementById('thresholdControl').classList.remove('hidden');
-            document.getElementById('thresholdControl').classList.add('flex');
-            processingOverlay.classList.add('hidden');
-
-            // Make page scrollable so receipt is fully visible
-            document.body.classList.remove('overflow-hidden', 'h-[100svh]');
-            document.body.classList.add('overflow-y-auto', 'min-h-[100svh]', 'h-auto');
+      // Helper to stop camera stream
+      function stopCamera() {
+        if (cameraStream) {
+          cameraStream.getTracks().forEach((track) => track.stop());
+          cameraStream = null;
         }
+        cameraVideo.srcObject = null;
+      }
 
-        const thresholdSlider = document.getElementById('thresholdSlider');
-        const thresholdValueLabel = document.getElementById('thresholdValue');
-        const sliderLabel = document.getElementById('sliderLabel');
-        const labelLeft = document.getElementById('labelLeft');
-        const labelRight = document.getElementById('labelRight');
-        
-        const modeStencil = document.getElementById('modeStencil');
-        const modeGrayscale = document.getElementById('modeGrayscale');
+      // Retake — go back to camera capture
+      btnRetake.addEventListener("click", async () => {
+        // Hide receipt and buttons
+        receiptContainer.classList.add("hidden");
+        btnRow.classList.add("hidden");
+        document.getElementById("thresholdControl").classList.add("hidden");
+        thankYouMsg.classList.add("hidden");
 
-        modeStencil.addEventListener('click', () => setMode('stencil'));
-        modeGrayscale.addEventListener('click', () => setMode('grayscale'));
+        // Reset body scroll
+        document.body.classList.add("overflow-hidden", "h-[100svh]");
+        document.body.classList.remove(
+          "overflow-y-auto",
+          "min-h-[100svh]",
+          "h-auto",
+        );
 
-        function setMode(mode) {
-            currentMode = mode;
-            if (mode === 'stencil') {
-                modeStencil.classList.add('bg-primary', 'text-white');
-                modeStencil.classList.remove('text-gray-500');
-                modeGrayscale.classList.remove('bg-primary', 'text-white');
-                modeGrayscale.classList.add('text-gray-500');
-                
-                sliderLabel.textContent = "Darkness Threshold";
-                labelLeft.textContent = "LIGHTER";
-                labelRight.textContent = "DARKER";
-                thresholdSlider.min = 0;
-                thresholdSlider.max = 255;
-                thresholdSlider.value = 130;
-                thresholdValueLabel.textContent = 130;
-            } else {
-                modeGrayscale.classList.add('bg-primary', 'text-white');
-                modeGrayscale.classList.remove('text-gray-500');
-                modeStencil.classList.remove('bg-primary', 'text-white');
-                modeStencil.classList.add('text-gray-500');
-                
-                sliderLabel.textContent = "Brightness";
-                labelLeft.textContent = "DIM";
-                labelRight.textContent = "BRIGHT";
-                thresholdSlider.min = -150;
-                thresholdSlider.max = 150;
-                thresholdSlider.value = 0;
-                thresholdValueLabel.textContent = 0;
-            }
-            applyFilters();
+        // Show video and capture button
+        videoContainer.classList.remove("hidden");
+        mainHeader.classList.remove("hidden");
+        btnCapture.classList.remove("hidden");
+        btnCapture.classList.add("flex");
+        btnCapture.disabled = false;
+        btnCapture.textContent = "Capture";
+
+        // Restart browser camera
+        try {
+          cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: "user",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+            audio: false,
+          });
+          cameraVideo.srcObject = cameraStream;
+        } catch (e) {
+          console.error("Camera restart error:", e);
+          alert("Could not access camera: " + e.message);
         }
+      });
 
-        thresholdSlider.addEventListener('input', (e) => {
-            const val = e.target.value;
-            thresholdValueLabel.textContent = val;
-            applyFilters();
-        });
+      // Print receipt
+      btnPrint.addEventListener("click", async () => {
+        console.log("[PRINT] Button clicked");
+        btnPrint.disabled = true;
+        btnPrint.textContent = "Printing...";
+        if (ws && ws.readyState === 1)
+          ws.send(
+            JSON.stringify({ type: "log", msg: "[PRINT] Button clicked" }),
+          );
 
-        function applyFilters() {
-            if (!originalFrameData) return;
-            
-            const ctx = receiptCanvas.getContext('2d');
-            const w = receiptCanvas.width;
-            const h = receiptCanvas.height;
-            const sliderVal = parseInt(thresholdSlider.value);
+        try {
+          const receiptEl = document.getElementById("receiptContainer");
 
-            let imageData = new ImageData(
-                new Uint8ClampedArray(originalFrameData.data),
-                originalFrameData.width,
-                originalFrameData.height
+          // Convert canvas to img (html2canvas struggles with canvas)
+          const canvasDataUrl = receiptCanvas.toDataURL("image/png");
+          const tempImg = document.createElement("img");
+          tempImg.src = canvasDataUrl;
+          tempImg.style.width = "100%";
+          tempImg.style.height = "100%";
+          tempImg.style.objectFit = "cover";
+          receiptCanvas.parentNode.replaceChild(tempImg, receiptCanvas);
+
+          if (ws && ws.readyState === 1)
+            ws.send(
+              JSON.stringify({
+                type: "log",
+                msg: "[PRINT] Generating receipt with native Canvas...",
+              }),
             );
-            let data = imageData.data;
 
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                const a = data[i + 3];
+          // --- CUSTOM CANVAS DRAWING ---
+          // We create a temporary canvas to draw the entire receipt manually
+          // This bypasses all html2canvas hanging issues.
+          const rCanvas = document.createElement("canvas");
+          rCanvas.width = 420; // Match CSS width
+          rCanvas.height = 840; // Increased to fit all content cleanly
+          const ctx = rCanvas.getContext("2d");
 
-                // If pixel is fully transparent (alpha=0), treat it as white
-                if (a === 0) {
-                    data[i] = 255; data[i+1] = 255; data[i+2] = 255; data[i+3] = 255;
-                    continue;
-                }
+          // White background
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, rCanvas.width, rCanvas.height);
 
-                // Calculate grayscale
-                let gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                
-                let finalVal;
-                if (currentMode === 'stencil') {
-                    // Stencil: Pure black/white based on threshold
-                    finalVal = gray < sliderVal ? 0 : 255;
-                } else {
-                    // Grayscale: Adjust brightness
-                    finalVal = Math.min(255, Math.max(0, gray + sliderVal));
-                }
-                
-                data[i] = finalVal;
-                data[i + 1] = finalVal;
-                data[i + 2] = finalVal;
-                data[i + 3] = 255;
-            }
-            
-            ctx.putImageData(imageData, 0, 0);
+          // Border top
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(20, 20, 380, 4);
+
+          // Text settings
+          ctx.textAlign = "center";
+
+          // Header
+          ctx.font = 'bold 36px "Averia Serif Libre", serif';
+          ctx.fillText("POT BOY ARU", 210, 60);
+
+          ctx.font = 'bold 24px "Averia Serif Libre", serif';
+          ctx.font = "italic " + ctx.font; // Make it italic
+          ctx.fillText("SAMPLE TEST", 210, 95);
+
+          ctx.font = "bold 16px monospace";
+          ctx.fillText("C O M E   H U N G R Y !", 210, 125);
+
+          // Dashed Line
+          const drawDashedLine = (y) => {
+            ctx.beginPath();
+            ctx.setLineDash([10, 10]);
+            ctx.moveTo(20, y);
+            ctx.lineTo(400, y);
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset
+          };
+          drawDashedLine(150);
+
+          // The Photo
+          // receiptCanvas is 300x225. Let's draw it centered
+          // Wait, it should be drawn with a solid border
+          ctx.lineWidth = 2;
+          ctx.strokeRect(59, 169, 302, 227);
+          ctx.drawImage(receiptCanvas, 60, 170, 300, 225);
+
+          // Date & Cashier
+          ctx.textAlign = "left";
+          ctx.font = 'bold 16px "Averia Serif Libre", serif';
+          ctx.fillText("Your Cashier is: WEEJ         PBA, # 02", 40, 430);
+
+          const dateText = document.getElementById("receiptDate").innerText;
+          ctx.fillText("DATE: " + dateText, 40, 455);
+          ctx.fillText("Hours: FRIDAY 12-7", 40, 480);
+          ctx.fillText("       SATURDAY 12-7", 40, 500);
+          ctx.fillText("       SUNDAY 1-6", 40, 520);
+
+          drawDashedLine(545);
+
+          // Results Table
+          ctx.font = 'bold 16px "Averia Serif Libre", serif';
+          ctx.fillText("NO", 30, 575);
+          ctx.textAlign = "center";
+          ctx.fillText("RESULTS", 210, 575);
+          ctx.textAlign = "right";
+          ctx.fillText("AMT", 390, 575);
+
+          ctx.textAlign = "left";
+          ctx.font = "14px monospace";
+          ctx.fillText("01  PLACEHOLDER               $", 30, 600);
+          ctx.fillText("02  PLACEHOLDER               $", 30, 620);
+          ctx.fillText("03  PLACEHOLDER               $", 30, 640);
+
+          // Tagline
+          ctx.textAlign = "center";
+          ctx.font = 'bold 20px "Averia Serif Libre", serif';
+          ctx.fillText("#We walk the talk,", 210, 680);
+          ctx.fillText("not only talk the talk", 210, 705);
+
+          // Footer separator
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(20, 725, 380, 2);
+
+          ctx.font = "bold 14px monospace";
+          ctx.fillText("C > O > M > E > H > U > N > G > R > Y", 210, 755);
+
+          ctx.font = 'bold 12px "Averia Serif Libre", serif';
+          ctx.fillText("RSVP 0889-0992-9999", 210, 785);
+          ctx.font = '12px "Averia Serif Libre", serif';
+          ctx.fillText(
+            "Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela",
+            210,
+            805,
+          );
+          // --- END CUSTOM DRAWING ---
+
+          const dataUrl = rCanvas.toDataURL("image/png");
+          if (ws && ws.readyState === 1)
+            ws.send(
+              JSON.stringify({
+                type: "log",
+                msg: "[PRINT] Native Canvas generated, size: " + dataUrl.length,
+              }),
+            );
+
+          console.log("[PRINT] Sending to server, size:", dataUrl.length);
+          if (ws && ws.readyState === 1)
+            ws.send(
+              JSON.stringify({
+                type: "log",
+                msg: "[PRINT] Sending to server, size: " + dataUrl.length,
+              }),
+            );
+          const response = await fetch("/api/print", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: dataUrl }),
+          });
+          console.log("[PRINT] Response:", response.status);
+          const result = await response.json();
+
+          if (result.success) {
+            btnRow.classList.add("hidden");
+            document.getElementById("thresholdControl").classList.add("hidden");
+            thankYouMsg.classList.remove("hidden");
+          } else {
+            btnPrint.textContent = "Print Failed";
+            btnPrint.disabled = false;
+            alert("Print error: " + result.error);
+          }
+        } catch (e) {
+          console.error("[PRINT] Error:", e);
+          btnPrint.textContent = "Print Failed";
+          btnPrint.disabled = false;
+          alert("Error: " + e.message);
         }
-
-        // Helper to stop camera stream
-        function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-            }
-            cameraVideo.srcObject = null;
-        }
-
-        // Retake — go back to camera capture
-        btnRetake.addEventListener('click', async () => {
-            // Hide receipt and buttons
-            receiptContainer.classList.add('hidden');
-            btnRow.classList.add('hidden');
-            document.getElementById('thresholdControl').classList.add('hidden');
-            thankYouMsg.classList.add('hidden');
-
-            // Reset body scroll
-            document.body.classList.add('overflow-hidden', 'h-[100svh]');
-            document.body.classList.remove('overflow-y-auto', 'min-h-[100svh]', 'h-auto');
-
-            // Show video and capture button
-            videoContainer.classList.remove('hidden');
-            mainHeader.classList.remove('hidden');
-            btnCapture.classList.remove('hidden');
-            btnCapture.classList.add('flex');
-            btnCapture.disabled = false;
-            btnCapture.textContent = 'Capture';
-
-            // Restart browser camera
-            try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: false
-                });
-                cameraVideo.srcObject = cameraStream;
-            } catch (e) {
-                console.error('Camera restart error:', e);
-                alert('Could not access camera: ' + e.message);
-            }
-        });
-
-        // Print receipt
-        btnPrint.addEventListener('click', async () => {
-            console.log('[PRINT] Button clicked');
-            btnPrint.disabled = true;
-            btnPrint.textContent = 'Printing...';
-            if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'log', msg: '[PRINT] Button clicked' }));
-
-            try {
-                const receiptEl = document.getElementById('receiptContainer');
-
-                // Convert canvas to img (html2canvas struggles with canvas)
-                const canvasDataUrl = receiptCanvas.toDataURL('image/png');
-                const tempImg = document.createElement('img');
-                tempImg.src = canvasDataUrl;
-                tempImg.style.width = '100%';
-                tempImg.style.height = '100%';
-                tempImg.style.objectFit = 'cover';
-                receiptCanvas.parentNode.replaceChild(tempImg, receiptCanvas);
-
-                if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'log', msg: '[PRINT] Generating receipt with native Canvas...' }));
-
-                // --- CUSTOM CANVAS DRAWING ---
-                // We create a temporary canvas to draw the entire receipt manually
-                // This bypasses all html2canvas hanging issues.
-                const rCanvas = document.createElement('canvas');
-                rCanvas.width = 420; // Match CSS width
-                rCanvas.height = 840; // Increased to fit all content cleanly
-                const ctx = rCanvas.getContext('2d');
-
-                // White background
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, rCanvas.width, rCanvas.height);
-
-                // Border top
-                ctx.fillStyle = '#000000';
-                ctx.fillRect(20, 20, 380, 4);
-
-                // Text settings
-                ctx.textAlign = 'center';
-
-                // Header
-                ctx.font = 'bold 36px "Averia Serif Libre", serif';
-                ctx.fillText('POT BOY ARU', 210, 60);
-
-                ctx.font = 'bold 24px "Averia Serif Libre", serif';
-                ctx.font = 'italic ' + ctx.font; // Make it italic
-                ctx.fillText('SAMPLE TEST', 210, 95);
-
-                ctx.font = 'bold 16px monospace';
-                ctx.fillText('C O M E   H U N G R Y !', 210, 125);
-
-                // Dashed Line
-                const drawDashedLine = (y) => {
-                    ctx.beginPath();
-                    ctx.setLineDash([10, 10]);
-                    ctx.moveTo(20, y);
-                    ctx.lineTo(400, y);
-                    ctx.stroke();
-                    ctx.setLineDash([]); // Reset
-                };
-                drawDashedLine(150);
-
-                // The Photo
-                // receiptCanvas is 300x225. Let's draw it centered
-                // Wait, it should be drawn with a solid border
-                ctx.lineWidth = 2;
-                ctx.strokeRect(59, 169, 302, 227);
-                ctx.drawImage(receiptCanvas, 60, 170, 300, 225);
-
-                // Date & Cashier
-                ctx.textAlign = 'left';
-                ctx.font = 'bold 16px "Averia Serif Libre", serif';
-                ctx.fillText('Your Cashier is: WEEJ         PBA, # 02', 40, 430);
-
-                const dateText = document.getElementById('receiptDate').innerText;
-                ctx.fillText('DATE: ' + dateText, 40, 455);
-                ctx.fillText('Hours: FRIDAY 12-7', 40, 480);
-                ctx.fillText('       SATURDAY 12-7', 40, 500);
-                ctx.fillText('       SUNDAY 1-6', 40, 520);
-
-                drawDashedLine(545);
-
-                // Results Table
-                ctx.font = 'bold 16px "Averia Serif Libre", serif';
-                ctx.fillText('NO', 30, 575);
-                ctx.textAlign = 'center';
-                ctx.fillText('RESULTS', 210, 575);
-                ctx.textAlign = 'right';
-                ctx.fillText('AMT', 390, 575);
-
-                ctx.textAlign = 'left';
-                ctx.font = '14px monospace';
-                ctx.fillText('01  PLACEHOLDER               $', 30, 600);
-                ctx.fillText('02  PLACEHOLDER               $', 30, 620);
-                ctx.fillText('03  PLACEHOLDER               $', 30, 640);
-
-                // Tagline
-                ctx.textAlign = 'center';
-                ctx.font = 'bold 20px "Averia Serif Libre", serif';
-                ctx.fillText('#We walk the talk,', 210, 680);
-                ctx.fillText('not only talk the talk', 210, 705);
-
-                // Footer separator
-                ctx.fillStyle = '#000000';
-                ctx.fillRect(20, 725, 380, 2);
-
-                ctx.font = 'bold 14px monospace';
-                ctx.fillText('C > O > M > E > H > U > N > G > R > Y', 210, 755);
-
-                ctx.font = 'bold 12px "Averia Serif Libre", serif';
-                ctx.fillText('RSVP 0889-0992-9999', 210, 785);
-                ctx.font = '12px "Averia Serif Libre", serif';
-                ctx.fillText('Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela', 210, 805);
-                // --- END CUSTOM DRAWING ---
-
-                const dataUrl = rCanvas.toDataURL('image/png');
-                if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'log', msg: '[PRINT] Native Canvas generated, size: ' + dataUrl.length }));
-
-                console.log('[PRINT] Sending to server, size:', dataUrl.length);
-                if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'log', msg: '[PRINT] Sending to server, size: ' + dataUrl.length }));
-                const response = await fetch('/api/print', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: dataUrl })
-                });
-                console.log('[PRINT] Response:', response.status);
-                const result = await response.json();
-
-                if (result.success) {
-                    btnRow.classList.add('hidden');
-                    document.getElementById('thresholdControl').classList.add('hidden');
-                    thankYouMsg.classList.remove('hidden');
-                } else {
-                    btnPrint.textContent = 'Print Failed';
-                    btnPrint.disabled = false;
-                    alert('Print error: ' + result.error);
-                }
-            } catch (e) {
-                console.error('[PRINT] Error:', e);
-                btnPrint.textContent = 'Print Failed';
-                btnPrint.disabled = false;
-                alert('Error: ' + e.message);
-            }
-        });
+      });
     </script>
-</body>
-
+  </body>
 </html>
