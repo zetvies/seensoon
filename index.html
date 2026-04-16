@@ -99,13 +99,37 @@
     <main
       class="flex-1 flex flex-col items-center justify-start w-full max-w-[90svw] relative overflow-hidden"
     >
-      <!-- Default Character Image -->
+      <!-- Default Character Images (slideshow) -->
       <div id="imageContainer" class="h-[55svh] flex justify-center pt-[10svh]">
         <img
-          id="characterImg"
-          src="./assets/icon.svg"
+          src="./assets/image-1.png"
           alt="Potboy"
-          class="max-h-[45svh] max-w-[80svw] object-contain"
+          class="slideshow-img max-w-[80svw] object-contain"
+          style="max-height: 25svh"
+        />
+        <img
+          src="./assets/image-2.png"
+          alt="Potboy"
+          class="slideshow-img max-w-[80svw] object-contain hidden"
+          style="max-height: 45svh"
+        />
+        <img
+          src="./assets/image-3.png"
+          alt="Potboy"
+          class="slideshow-img max-w-[80svw] object-contain hidden"
+          style="max-height: 45svh"
+        />
+        <img
+          src="./assets/image-4.png"
+          alt="Potboy"
+          class="slideshow-img max-w-[80svw] object-contain hidden"
+          style="max-height: 45svh"
+        />
+        <img
+          src="./assets/image-5.png"
+          alt="Potboy"
+          class="slideshow-img max-w-[80svw] object-contain hidden"
+          style="max-height: 8svh"
         />
       </div>
 
@@ -359,7 +383,8 @@
 
     <script>
       // State elements
-      const characterImg = document.getElementById("characterImg");
+      const imageContainer = document.getElementById("imageContainer");
+      const slideshowImgs = document.querySelectorAll(".slideshow-img");
       const videoContainer = document.getElementById("videoContainer");
       const cameraVideo = document.getElementById("cameraVideo");
       const receiptCanvas = document.getElementById("receiptCanvas");
@@ -383,21 +408,12 @@
       let currentMode = "stencil"; // 'stencil' or 'grayscale'
       let cameraStream = null; // MediaStream from getUserMedia
 
-      // Image slideshow (cycle image-1.png to image-5.png every 4s)
-      const slideshowImages = [
-        { src: "./assets/image-1.png", height: "25svh" },
-        { src: "./assets/image-2.png", height: "45svh" },
-        { src: "./assets/image-3.png", height: "45svh" },
-        { src: "./assets/image-4.png", height: "45svh" },
-        { src: "./assets/image-5.png", height: "7svh" },
-      ];
+      // Image slideshow (toggle visibility every 4s)
       let slideshowIndex = 0;
-      // Apply initial height
-      characterImg.style.maxHeight = slideshowImages[0].height;
       let slideshowInterval = setInterval(() => {
-        slideshowIndex = (slideshowIndex + 1) % slideshowImages.length;
-        characterImg.src = slideshowImages[slideshowIndex].src;
-        characterImg.style.maxHeight = slideshowImages[slideshowIndex].height;
+        slideshowImgs[slideshowIndex].classList.add("hidden");
+        slideshowIndex = (slideshowIndex + 1) % slideshowImgs.length;
+        slideshowImgs[slideshowIndex].classList.remove("hidden");
       }, 4000);
 
       // WebSocket Setup
@@ -443,7 +459,7 @@
       // Start -> Preview
       btnStart.addEventListener("click", async () => {
         btnStart.disabled = true;
-        btnStart.textContent = "Opening camera...";
+        btnStart.textContent = "STARTING...";
         clearInterval(slideshowInterval);
 
         try {
@@ -466,7 +482,7 @@
 
           btnStart.classList.add("hidden");
           btnStart.classList.remove("flex");
-          characterImg.classList.add("hidden");
+          imageContainer.classList.add("hidden");
 
           videoContainer.classList.remove("hidden");
           videoContainer.classList.add("flex");
