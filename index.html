@@ -171,18 +171,17 @@
         />
       </div>
 
-      <!-- Video Container (Browser Camera) -->
+      <!-- Video Container (Pi MJPEG Stream) -->
       <div
         id="videoContainer"
         class="max-w-[90svw] max-h-[60svh] aspect-[2/3] border border-black border-[.2svh] overflow-hidden relative hidden mt-[4svh]"
       >
-        <video
-          id="cameraVideo"
+        <img
+          id="mjpegStream"
           class="w-full h-full object-cover"
-          autoplay
-          playsinline
-          muted
-        ></video>
+          src=""
+          alt="Live Stream"
+        />
         <div
           id="countdown"
           class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8rem] text-white font-bold drop-shadow-md hidden pointer-events-none z-10 transition-opacity"
@@ -374,7 +373,7 @@
       const imageContainer = document.getElementById("imageContainer");
       const slideshowImgs = document.querySelectorAll(".slideshow-img");
       const videoContainer = document.getElementById("videoContainer");
-      const cameraVideo = document.getElementById("cameraVideo");
+      const mjpegStream = document.getElementById("mjpegStream");
       const receiptCanvas = document.getElementById("receiptCanvas");
       const countdownEl = document.getElementById("countdown");
       const processingOverlay = document.getElementById("processingOverlay");
@@ -400,7 +399,6 @@
       let previewActive = false;
       let originalFrameData = null; // Store raw capture for re-processing
       let currentMode = "stencil"; // 'stencil' or 'grayscale'
-      let cameraStream = null; // MediaStream from getUserMedia
 
       // Image slideshow (toggle visibility every 4s)
       let slideshowIndex = 0;
@@ -467,39 +465,28 @@
         clearInterval(slideshowInterval);
 
         try {
-          // Use browser camera directly via getUserMedia
-          console.log("[CAMERA] Requesting camera access...");
-          cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: "user",
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-            },
-            audio: false,
-          });
-          console.log("[CAMERA] Got stream, assigning to video element...");
-          cameraVideo.srcObject = cameraStream;
+          const response = await fetch("/api/preview/start", { method: "POST" });
+          const result = await response.json();
 
-          // Wait for the video to actually start playing
-          await cameraVideo.play();
-          console.log("[CAMERA] Video playing, transitioning UI...");
+          if (result.success) {
+            btnStart.classList.add("hidden");
+            btnStart.classList.remove("flex");
+            imageContainer.classList.add("hidden");
 
-          btnStart.classList.add("hidden");
-          btnStart.classList.remove("flex");
-          imageContainer.classList.add("hidden");
+            mjpegStream.src = result.stream_url + "?t=" + Date.now();
+            videoContainer.classList.remove("hidden");
+            videoContainer.classList.add("flex");
 
-          videoContainer.classList.remove("hidden");
-          videoContainer.classList.add("flex");
-
-          btnCapture.classList.remove("hidden");
-          btnCapture.classList.add("flex");
-          previewActive = true;
-          console.log("[CAMERA] Preview active!");
+            btnCapture.classList.remove("hidden");
+            btnCapture.classList.add("flex");
+            previewActive = true;
+          } else {
+            alert("Could not start preview: " + result.error);
+          }
         } catch (e) {
-          console.error("[CAMERA] Error:", e);
-          alert("Could not access camera: " + e.message);
+          alert("Error connecting to server: " + e.message);
         }
-        btnStart.textContent = "Start";
+        btnStart.textContent = "START";
         btnStart.disabled = false;
       });
 
@@ -526,8 +513,24 @@
             // Show processing overlay
             processingOverlay.classList.remove("hidden");
 
-            // Capture frame directly from browser video
-            processAndShowReceipt();
+            // Call capture on Pi
+            try {
+              const response = await fetch("/api/capture", { method: "POST" });
+              const result = await response.json();
+              if (result.success) {
+                processAndShowReceipt();
+              } else {
+                alert("Capture failed: " + result.error);
+                processingOverlay.classList.add("hidden");
+                btnCapture.disabled = false;
+                btnCapture.textContent = "CAPTURE";
+              }
+            } catch (e) {
+              alert("Error: " + e.message);
+              processingOverlay.classList.add("hidden");
+              btnCapture.disabled = false;
+              btnCapture.textContent = "CAPTURE";
+            }
           }
         }, 1000);
       });
@@ -537,31 +540,7 @@
       }
 
       function processAndShowReceipt() {
-        // 1. Capture the visible 2:3 crop from the camera video
-        // The container is 2:3 with object-cover, so we need to
-        // calculate which portion of the native video is visible.
-        const videoW = cameraVideo.videoWidth;
-        const videoH = cameraVideo.videoHeight;
-        const targetRatio = 2 / 3; // container aspect ratio
-
-        let sx, sy, sw, sh;
-        const videoRatio = videoW / videoH;
-
-        if (videoRatio > targetRatio) {
-          // Video is wider than container — crop sides
-          sh = videoH;
-          sw = videoH * targetRatio;
-          sx = (videoW - sw) / 2;
-          sy = 0;
-        } else {
-          // Video is taller — crop top/bottom
-          sw = videoW;
-          sh = videoW / targetRatio;
-          sx = 0;
-          sy = (videoH - sh) / 2;
-        }
-
-        // Output canvas at 2:3 ratio
+        // 1. Capture current MJPEG frame to canvas
         const outW = 400;
         const outH = 600;
         receiptCanvas.width = outW;
@@ -570,10 +549,28 @@
         const w = receiptCanvas.width;
         const h = receiptCanvas.height;
 
-        ctx.drawImage(cameraVideo, sx, sy, sw, sh, 0, 0, outW, outH);
+        // Draw the MJPEG stream image onto canvas
+        // Calculate crop for object-cover style (2:3 target)
+        const imgW = mjpegStream.naturalWidth;
+        const imgH = mjpegStream.naturalHeight;
+        const targetRatio = 2 / 3;
 
-        // Stop the camera stream after capture
-        stopCamera();
+        let sx, sy, sw, sh;
+        const imgRatio = imgW / imgH;
+
+        if (imgRatio > targetRatio) {
+          sh = imgH;
+          sw = imgH * targetRatio;
+          sx = (imgW - sw) / 2;
+          sy = 0;
+        } else {
+          sw = imgW;
+          sh = imgW / targetRatio;
+          sx = 0;
+          sy = (imgH - sh) / 2;
+        }
+
+        ctx.drawImage(mjpegStream, sx, sy, sw, sh, 0, 0, outW, outH);
 
         // Store original pixels so we can re-threshold without losing detail
         originalFrameData = ctx.getImageData(0, 0, w, h);
@@ -1024,15 +1021,6 @@
         }
       }
 
-      // Helper to stop camera stream
-      function stopCamera() {
-        if (cameraStream) {
-          cameraStream.getTracks().forEach((track) => track.stop());
-          cameraStream = null;
-        }
-        cameraVideo.srcObject = null;
-      }
-
       // Retake — go back to camera capture
       btnRetake.addEventListener("click", async () => {
         // Show main footer
@@ -1062,22 +1050,17 @@
         btnCapture.classList.remove("hidden");
         btnCapture.classList.add("flex");
         btnCapture.disabled = false;
-        btnCapture.textContent = "Capture";
+        btnCapture.textContent = "CAPTURE";
 
-        // Restart browser camera
+        // Restart Pi preview
         try {
-          cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: "user",
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-            },
-            audio: false,
-          });
-          cameraVideo.srcObject = cameraStream;
+          const response = await fetch("/api/preview/start", { method: "POST" });
+          const result = await response.json();
+          if (result.success && result.stream_url) {
+            mjpegStream.src = result.stream_url + "?t=" + Date.now();
+          }
         } catch (e) {
-          console.error("Camera restart error:", e);
-          alert("Could not access camera: " + e.message);
+          console.error("Preview restart error:", e);
         }
       });
 

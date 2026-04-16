@@ -6,18 +6,9 @@ import os
 import asyncio
 import json
 import uuid
-import threading
-import time
 from dotenv import load_dotenv
 from typing import List, Optional
 from starlette.websockets import WebSocket, WebSocketDisconnect
-
-try:
-    import cv2
-    WEBCAM_AVAILABLE = True
-except ImportError:
-    WEBCAM_AVAILABLE = False
-    print("[WARN] opencv-python not installed, webcam fallback disabled")
 
 # Load env
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -81,74 +72,6 @@ class PiConnection:
         self.frame_event.set()
 
 pi = PiConnection()
-
-# ================================
-# LOCAL WEBCAM FALLBACK
-# ================================
-
-class WebcamStream:
-    """Local webcam for when Pi is not connected."""
-    def __init__(self, camera_index=0):
-        self.camera_index = camera_index
-        self.cap = None
-        self.running = False
-        self.latest_frame = None
-        self.frame_event = asyncio.Event()
-        self._thread = None
-        self._lock = threading.Lock()
-
-    def start(self):
-        if not WEBCAM_AVAILABLE:
-            return False
-        self.stop()  # clean up any previous
-        import sys
-        if sys.platform == 'win32':
-            self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
-        else:
-            self.cap = cv2.VideoCapture(self.camera_index)
-        if not self.cap.isOpened():
-            print("[WEBCAM] Could not open camera")
-            return False
-        self.running = True
-        self._thread = threading.Thread(target=self._capture_loop, daemon=True)
-        self._thread.start()
-        print(f"[WEBCAM] Started (index={self.camera_index})")
-        return True
-
-    def _capture_loop(self):
-        while self.running and self.cap and self.cap.isOpened():
-            ret, frame = self.cap.read()
-            if ret:
-                _, jpeg = cv2.imencode('.jpg', frame)
-                with self._lock:
-                    self.latest_frame = jpeg.tobytes()
-                # Signal async waiters from the thread
-                try:
-                    self.frame_event.set()
-                except:
-                    pass
-            time.sleep(1 / 20)  # ~20fps
-
-    def stop(self):
-        self.running = False
-        if self._thread:
-            self._thread.join(timeout=3)
-            self._thread = None
-        if self.cap:
-            self.cap.release()
-            self.cap = None
-        self.latest_frame = None
-        print("[WEBCAM] Stopped")
-
-    def get_frame(self):
-        with self._lock:
-            return self.latest_frame
-
-    @property
-    def active(self):
-        return self.running and self.cap is not None and self.cap.isOpened()
-
-webcam = WebcamStream()
 
 # ================================
 # BROWSER WEBSOCKET MANAGER
@@ -263,107 +186,57 @@ async def browser_websocket(websocket: WebSocket):
 @app.get("/api/pi/status")
 async def pi_status():
     """Check if Pi is connected."""
-    return {"connected": pi.connected, "webcam": webcam.active}
+    return {"connected": pi.connected}
 
 @app.post("/api/preview/start")
 async def api_preview_start():
     print("[API] Preview start")
-    # If Pi is connected, use it
-    if pi.connected:
-        result = await pi.send_command("preview_start", timeout=10)
-        if result.get("success"):
-            pi.streaming = True
-            return {"success": True, "stream_url": "/api/stream", "source": "pi"}
-        return result
-    # Fallback to local webcam
-    if WEBCAM_AVAILABLE:
-        success = webcam.start()
-        if success:
-            return {"success": True, "stream_url": "/api/stream", "source": "webcam"}
-        return {"success": False, "error": "Could not open webcam"}
-    return {"success": False, "error": "No Pi connected and no webcam available"}
+    result = await pi.send_command("preview_start", timeout=10)
+    if result.get("success"):
+        pi.streaming = True
+        return {"success": True, "stream_url": "/api/stream"}
+    return result
 
 @app.post("/api/preview/stop")
 async def api_preview_stop():
     print("[API] Preview stop")
-    if pi.connected:
-        pi.streaming = False
-        return await pi.send_command("preview_stop", timeout=5)
-    webcam.stop()
-    return {"success": True}
+    pi.streaming = False
+    return await pi.send_command("preview_stop", timeout=5)
 
 @app.get("/api/stream")
 async def api_stream():
-    """Serve MJPEG stream from Pi or local webcam."""
+    """Serve MJPEG stream from Pi's frames pushed over WebSocket."""
     print("[STREAM] Browser connected")
 
-    # Pi stream
-    if pi.connected and pi.streaming:
-        async def generate_pi():
-            while pi.connected and pi.streaming:
-                pi.frame_event.clear()
-                try:
-                    await asyncio.wait_for(pi.frame_event.wait(), timeout=5)
-                except asyncio.TimeoutError:
-                    continue
-                if pi.latest_frame:
-                    yield (b'--frame\r\n'
-                           b'Content-Type: image/jpeg\r\n\r\n' +
-                           pi.latest_frame + b'\r\n')
-            print("[STREAM] Pi stream ended")
-        return StreamingResponse(
-            generate_pi(),
-            media_type="multipart/x-mixed-replace; boundary=frame"
-        )
+    async def generate():
+        while pi.connected and pi.streaming:
+            pi.frame_event.clear()
+            try:
+                await asyncio.wait_for(pi.frame_event.wait(), timeout=5)
+            except asyncio.TimeoutError:
+                continue
 
-    # Webcam stream
-    if webcam.active:
-        async def generate_webcam():
-            while webcam.active:
-                webcam.frame_event.clear()
-                try:
-                    await asyncio.wait_for(webcam.frame_event.wait(), timeout=5)
-                except asyncio.TimeoutError:
-                    continue
-                frame = webcam.get_frame()
-                if frame:
-                    yield (b'--frame\r\n'
-                           b'Content-Type: image/jpeg\r\n\r\n' +
-                           frame + b'\r\n')
-            print("[STREAM] Webcam stream ended")
-        return StreamingResponse(
-            generate_webcam(),
-            media_type="multipart/x-mixed-replace; boundary=frame"
-        )
+            if pi.latest_frame:
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' +
+                       pi.latest_frame + b'\r\n')
+        print("[STREAM] Ended")
 
-    return JSONResponse({"error": "No stream source available"}, status_code=503)
+    return StreamingResponse(
+        generate(),
+        media_type="multipart/x-mixed-replace; boundary=frame"
+    )
 
 @app.post("/api/capture")
 async def api_capture():
     print("[API] Capture")
-    # If Pi connected, use Pi capture
-    if pi.connected:
-        return await pi.send_command("capture", timeout=30)
-    # Webcam fallback — grab latest frame
-    if webcam.active:
-        frame = webcam.get_frame()
-        if frame:
-            import tempfile
-            temp_path = os.path.join(tempfile.gettempdir(), 'capture.jpg')
-            with open(temp_path, 'wb') as f:
-                f.write(frame)
-            print(f"[WEBCAM] Captured frame to {temp_path}")
-            return {"success": True, "message": "Captured from webcam!"}
-        return {"success": False, "error": "No frame available"}
-    return {"success": False, "error": "No capture source available"}
+    return await pi.send_command("capture", timeout=30)
 
 @app.post("/api/print")
 async def api_print(request: Request):
     print("[API] Print")
     data = await request.json()
-    if pi.connected:
-        return await pi.send_command("print", data={"image": data.get("image", "")}, timeout=30)
-    return {"success": False, "error": "Printing requires Pi connection"}
+    return await pi.send_command("print", data={"image": data.get("image", "")}, timeout=30)
 
 # ================================
 # BROWSER WEBSOCKET
