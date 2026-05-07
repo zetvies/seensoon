@@ -190,18 +190,14 @@ async def pi_status():
 
 @app.post("/api/preview/start")
 async def api_preview_start():
-    print("[API] Preview start")
-    result = await pi.send_command("preview_start", timeout=10)
-    if result.get("success"):
-        pi.streaming = True
-        return {"success": True, "stream_url": "/api/stream"}
-    return result
+    print("[API] Preview start (local/browser mode)")
+    # We no longer need to command the Pi for preview
+    return {"success": True, "stream_url": "/api/stream"}
 
 @app.post("/api/preview/stop")
 async def api_preview_stop():
-    print("[API] Preview stop")
-    pi.streaming = False
-    return await pi.send_command("preview_stop", timeout=5)
+    print("[API] Preview stop (local/browser mode)")
+    return {"success": True}
 
 @app.get("/api/stream")
 async def api_stream():
@@ -229,8 +225,8 @@ async def api_stream():
 
 @app.post("/api/capture")
 async def api_capture():
-    print("[API] Capture")
-    return await pi.send_command("capture", timeout=30)
+    print("[API] Capture (handled by browser)")
+    return {"success": True, "message": "Browser is capturing"}
 
 @app.post("/api/print")
 async def api_print(request: Request):

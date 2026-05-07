@@ -1,379 +1,507 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="light">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Potboy Demo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>PHOTO CHAOS — Seensoon</title>
+    <meta name="description" content="An unpredictable digital playground for your weirdest angles. No filters, no rules, total chaos.">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@800;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
     <script>
       tailwind.config = {
+        darkMode: "class",
         theme: {
           extend: {
             colors: {
-              primary: "#e74c3c",
-              "primary-dark": "#c0392b",
+              "primary-fixed-dim": "#b4c5ff",
+              "surface-container-high": "#ebe8e1",
+              "surface-dim": "#dcdad3",
+              "primary-fixed": "#dbe1ff",
+              "on-primary-container": "#eeefff",
+              "secondary-fixed-dim": "#ffb4ab",
+              "on-primary-fixed-variant": "#003ea8",
+              "surface-container-low": "#f6f3ec",
+              "on-secondary": "#ffffff",
+              "tertiary": "#006329",
+              "on-tertiary-fixed": "#002109",
+              "surface-variant": "#e5e2db",
+              "on-error": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed-variant": "#005320",
+              "tertiary-fixed-dim": "#62df7d",
+              "secondary-fixed": "#ffdad6",
+              "error": "#ba1a1a",
+              "surface-tint": "#0053db",
+              "primary": "#004ac6",
+              "secondary-container": "#e02928",
+              "on-surface": "#1c1c18",
+              "surface-container-highest": "#e5e2db",
+              "on-background": "#1c1c18",
+              "surface": "#fcf9f2",
+              "on-tertiary": "#ffffff",
+              "inverse-primary": "#b4c5ff",
+              "on-primary": "#ffffff",
+              "tertiary-fixed": "#7ffc97",
+              "inverse-on-surface": "#f3f0e9",
+              "primary-container": "#2563eb",
+              "on-surface-variant": "#434655",
+              "tertiary-container": "#007f36",
+              "on-secondary-fixed": "#410002",
+              "outline-variant": "#c3c6d7",
+              "on-tertiary-container": "#c7ffca",
+              "secondary": "#bb0112",
+              "error-container": "#ffdad6",
+              "surface-bright": "#fcf9f2",
+              "on-secondary-container": "#fffbff",
+              "on-primary-fixed": "#00174b",
+              "inverse-surface": "#31312c",
+              "background": "#fcf9f2",
+              "on-secondary-fixed-variant": "#93000b",
+              "surface-container": "#f1eee7",
+              "outline": "#737686",
+              "on-error-container": "#93000a",
+              "chaos-red": "#bb0112",
+              "chaos-green": "#006329",
+              "chaos-blue": "#2563eb",
+              "chaos-cream": "#fcf9f2"
             },
             fontFamily: {
-              averia: ['"Averia Serif Libre"', "serif"],
-              helvetica: [
-                '"Helvetica Neue"',
-                "Helvetica",
-                "Arial",
-                "sans-serif",
-              ],
-              receipt: ['"Courier New"', "Courier", "monospace"],
+              "headline-md": ["Space Grotesk"],
+              "headline-lg": ["Epilogue"],
+              "body-reg": ["Space Grotesk"],
+              "label-mono": ["Space Grotesk"],
+              "display-xl": ["Epilogue"]
             },
-            backgroundImage: {
-              "dashed-line":
-                "url(\"data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='0' ry='0' stroke='black' stroke-width='2' stroke-dasharray='10%2c 10' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e\")",
-            },
-          },
-        },
+            spacing: {
+              "margin": "32px",
+              "gutter": "24px"
+            }
+          }
+        }
       };
     </script>
     <style>
-      @font-face {
-        font-family: "Averia Serif Libre";
-        src: url("./assets/fonts/AveriaSerifLibre-Regular.ttf")
-          format("truetype");
-        font-weight: normal;
-        font-style: normal;
+      .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+      .neo-brutalist-shadow { box-shadow: 4px 4px 0px 0px rgba(28,28,24,1); }
+      .neo-brutalist-shadow-lg { box-shadow: 8px 8px 0px 0px rgba(28,28,24,1); }
+      .active-neo-press:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px 0px rgba(28,28,24,1); }
+      .marker-border { border: 3px solid #1c1c18; }
+      .rotated-container { transform: rotate(-1deg); }
+      .rotated-container-alt { transform: rotate(1.5deg); }
+      .tilt-1 { transform: rotate(-1.5deg); }
+      .tilt-2 { transform: rotate(2deg); }
+      
+      /* Marquee ticker */
+      @keyframes marquee-scroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      .marquee-track {
+        display: flex;
+        width: max-content;
+        animation: marquee-scroll 20s linear infinite;
+      }
+      .marquee-track:hover { animation-play-state: paused; }
+
+      /* Polaroid scatter */
+      .polaroid {
+        border: 4px solid black;
+        box-shadow: 6px 6px 0px black;
+        background: white;
+        padding: 8px 8px 32px 8px;
+        transition: all 0.25s cubic-bezier(.4,0,.2,1);
+        cursor: pointer;
+        position: relative;
+      }
+      .polaroid:hover { z-index: 20; transform: scale(1.08) rotate(0deg) !important; }
+      .polaroid.selected { border-color: #bb0112; box-shadow: 6px 6px 0px #bb0112; }
+      .polaroid.selected::after {
+        content: '✓';
+        position: absolute; top: -14px; right: -14px;
+        background: #bb0112; color: white;
+        width: 28px; height: 28px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; font-weight: bold; border: 3px solid black;
+      }
+      .polaroid-label {
+        position: absolute; bottom: 6px; left: 8px; right: 8px;
+        font-family: 'Space Grotesk', monospace; font-size: 11px;
+        text-transform: uppercase; letter-spacing: 0.5px; color: #555;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
 
-      @font-face {
-        font-family: "Averia Serif Libre";
-        src: url("./assets/fonts/AveriaSerifLibre-Bold.ttf") format("truetype");
-        font-weight: bold;
-        font-style: normal;
+      /* Gallery items (capture screen) */
+      .gallery-item {
+        border: 3px solid black; box-shadow: 3px 3px 0px black;
+        transition: all 0.2s; cursor: pointer; position: relative; background: white;
+      }
+      .gallery-item.selected { border-color: #bb0112; transform: scale(1.05) rotate(-2deg); z-index: 10; }
+      .gallery-item.selected::after {
+        content: attr(data-index);
+        position: absolute; top: -10px; right: -10px;
+        background: #bb0112; color: white;
+        width: 24px; height: 24px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Space Grotesk', monospace; font-size: 14px; font-weight: bold;
+        border: 2px solid black;
       }
 
-      @font-face {
-        font-family: "Helvetica Neue";
-        src: url("./assets/fonts/Helvetica Neue LT Std 65 Medium.otf")
-          format("opentype");
-        font-weight: 500;
-        font-style: normal;
-      }
+      /* Frame option cards */
+      .frame-option { transition: all 0.15s; }
+      .frame-option.selected { background: #bb0112 !important; color: white !important; }
+      .frame-option.selected .frame-sub { color: rgba(255,255,255,0.7) !important; }
+      .frame-option:not(.selected):hover { transform: translateX(4px); }
 
-      @font-face {
-        font-family: "Helvetica Neue";
-        src: url("./assets/fonts/Helvetica Neue LT Std 75 Bold.otf")
-          format("opentype");
-        font-weight: bold;
-        font-style: normal;
-      }
-
-      .receipt-tear {
-        background-image: radial-gradient(
-          circle at 10px 0,
-          transparent 10px,
-          white 11px
-        );
-        background-size: 20px 20px;
-        background-repeat: repeat-x;
-        height: 10px;
-        width: 100%;
-      }
-
-      /* Custom Slider */
+      /* Slider */
       .custom-slider::-webkit-slider-thumb {
-        appearance: none;
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
-        background: black;
-        cursor: pointer;
+        appearance: none; width: 20px; height: 20px;
+        border: 3px solid black; border-radius: 0;
+        background: #bb0112; cursor: pointer;
       }
-      .custom-slider::-moz-range-thumb {
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
-        background: black;
-        cursor: pointer;
-        border: none;
-      }
+
+      /* Process cards */
+      .process-card { transition: transform 0.3s; }
+      .process-card:hover { transform: translateY(-6px) rotate(-1deg); }
+
+      /* Step indicator */
+      .step-bar { height: 8px; transition: width 0.4s; }
+
+      /* Nav active pill */
+      .nav-item { transition: all 0.15s; border-radius: 4px; }
+      .nav-item.active { background: #bb0112; color: white; }
+      .nav-item.active .material-symbols-outlined { color: white; }
     </style>
   </head>
 
-  <body
-    class="flex flex-col items-center h-[100svh] w-screen overflow-hidden bg-white text-black font-helvetica select-none overflow-x-hidden"
-  >
-    <!-- ===== HEADER ===== -->
-    <header id="mainHeader" class="w-full pt-[6svh] pb-[2svh] flex-shrink-0">
-      <div class="flex justify-center items-center">
-        <img
-          src="./assets/logo.svg"
-          alt="Potboy Aru"
-          class="h-[4svh] w-auto object-contain"
-        />
+  <body class="bg-surface text-on-surface font-body-reg overflow-hidden h-[100svh] flex flex-col">
+    <!-- Global Header -->
+    <header id="mainHeader" class="bg-surface-container-high border-b-4 border-on-surface flex-shrink-0 z-[60] h-[8svh] flex items-center w-full">
+      <div class="flex justify-between items-center w-full px-6 md:px-margin">
+        <div class="flex items-center gap-2">
+          <img src="./assets/logo-seensoon.svg" alt="Seensoon" class="h-7 md:h-9">
+        </div>
+        <div class="flex gap-3">
+          <button class="material-symbols-outlined text-primary p-2 border-2 border-on-surface bg-surface neo-brutalist-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 duration-75" style="font-variation-settings: 'FILL' 0;">history</button>
+          <button class="material-symbols-outlined text-primary p-2 border-2 border-on-surface bg-surface neo-brutalist-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 duration-75">settings</button>
+        </div>
       </div>
-      <hr class="mt-3 border-t-2 border-black" />
     </header>
 
-    <!-- ===== NO PARAMS HEADER ===== -->
-    <div
-      id="noParamsHeader"
-      class="w-full pt-[12svh] flex-shrink-0 flex font-thin flex-col items-center gap-[4svh] font-bold text-lg hidden max-w-[80svw] mx-auto text-center"
-      style="letter-spacing: 0.3em"
-    >
-      <div>C O M E</div>
-      <div>H U N G R Y</div>
-      <div class="tracking-widest">&lt; 3 &nbsp; &lt; 3</div>
-    </div>
-
-    <!-- html2canvas for receipt printing -->
-    <script src="/assets/html2canvas.min.js"></script>
-
-    <!-- ===== CONTENT ===== -->
-    <main
-      class="flex flex-col flex-1 items-center justify-start w-full max-w-[90svw] relative overflow-hidden"
-    >
-      <!-- Default Character Images (slideshow) -->
-      <div
-        id="imageContainer"
-        class="h-[55svh] flex flex-col items-center justify-start pt-[10svh] transition-all"
-      >
-        <img
-          src="./assets/image-1.png"
-          alt="Potboy"
-          class="slideshow-img max-w-[80svw] object-contain"
-          style="max-height: 25svh"
-        />
-        <img
-          src="./assets/image-2.png"
-          alt="Potboy"
-          class="slideshow-img w-[80svw] max-w-[80svw] object-contain hidden"
-          style="max-height: 45svh"
-        />
-        <img
-          src="./assets/image-3.png"
-          alt="Potboy"
-          class="slideshow-img w-[80svw] max-w-[80svw] object-contain hidden"
-          style="max-height: 45svh"
-        />
-        <img
-          src="./assets/image-4.png"
-          alt="Potboy"
-          class="slideshow-img w-[80svw] max-w-[80svw] object-contain hidden"
-          style="max-height: 45svh"
-        />
-        <img
-          src="./assets/image-5.png"
-          alt="Potboy"
-          class="slideshow-img w-[80svw] max-w-[80svw] object-contain hidden"
-          style="max-height: 8svh"
-        />
-        <img
-          id="defaultAsset"
-          src="./assets/default-asset.png"
-          alt="Potboy Default"
-          class="w-[50svw] max-h-[40svh] mt-[10svh] object-contain hidden"
-        />
-      </div>
-
-      <!-- Video Container (Pi MJPEG Stream) -->
-      <div
-        id="videoContainer"
-        class="max-w-[90svw] max-h-[60svh] aspect-[2/3] border border-black border-[.2svh] overflow-hidden relative hidden mt-[4svh]"
-      >
-        <img
-          id="mjpegStream"
-          class="w-full h-full object-cover rotate-180"
-          src=""
-          alt="Live Stream"
-        />
-        <div
-          id="countdown"
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8rem] text-white font-bold drop-shadow-md hidden pointer-events-none z-10 transition-opacity"
-        >
-          3
-        </div>
-        <!-- Processing Overlay -->
-        <div
-          id="processingOverlay"
-          class="absolute inset-0 bg-black/80 flex items-center justify-center z-20 hidden"
-        >
-          <span class="text-white text-2xl font-bold animate-pulse"
-            >Processing image...</span
-          >
-        </div>
-      </div>
-
-      <!-- Retake / Print buttons & Settings -->
-      <div
-        id="settingsAndButtons"
-        class="w-full max-w-[95svw] md:max-w-[420px] px-2 flex-col gap-4 mt-6 pb-4"
-      >
-        <!-- Settings (shown after capture) -->
-        <div id="thresholdControl" class="hidden w-full flex-col">
-          <label class="block text-sm font-bold mb-1 tracking-wide"
-            >SETTINGS</label
-          >
-
-          <!-- Mode Selector -->
-          <div class="flex gap-4 items-center mb-6">
-            <button
-              id="modeStencil"
-              class="text-sm font-bold text-black border border-black px-2 py-0.5 uppercase tracking-wide"
-            >
-              STENCIL
-            </button>
-            <button id="modeGrayscale" class="text-sm font-bold text-gray-300">
-              GRAYSCALE
-            </button>
-            <button id="modeWinner" class="text-sm font-bold text-gray-300">
-              WINNER
-            </button>
+    <main class="w-full relative flex-1 h-[82svh] overflow-y-auto overflow-x-hidden">
+      <!-- 1. START SCREEN -->
+      <section id="imageContainer" class="px-6 md:px-margin pt-10 md:pt-16 flex flex-col items-center relative">
+        <!-- Hero Window Box -->
+        <div class="w-full max-w-4xl bg-surface border-4 border-on-surface p-6 md:p-8 neo-brutalist-shadow-lg -rotate-1 relative overflow-hidden">
+          <div class="flex flex-col md:flex-row gap-6 md:gap-10 items-start">
+            <div class="flex-1">
+              <h1 class="font-display-xl text-[42px] md:text-[56px] uppercase text-on-surface mb-3 leading-[0.95]">
+                Ditch the <span class="text-secondary line-through decoration-4">Boring</span>
+              </h1>
+              <p class="font-headline-md text-base md:text-lg text-on-surface-variant max-w-sm mt-4">
+                An unpredictable digital playground for your weirdest angles.
+              </p>
+            </div>
+            <!-- Photo collage area -->
+            <div class="relative w-full md:w-[280px] h-[180px] flex-shrink-0 hidden md:block">
+              <div class="absolute top-0 right-0 w-[120px] h-[90px] border-3 border-on-surface bg-white p-1 rotate-2 neo-brutalist-shadow overflow-hidden">
+                <img src="./assets/image-1.png" alt="" class="w-full h-full object-cover grayscale contrast-125">
+              </div>
+              <div class="absolute top-2 right-[130px] w-[120px] h-[90px] border-3 border-on-surface bg-white p-1 -rotate-1 neo-brutalist-shadow overflow-hidden">
+                <img src="./assets/image-2.png" alt="" class="w-full h-full object-cover grayscale contrast-125">
+              </div>
+              <div class="absolute bottom-0 right-[40px] bg-on-surface text-surface p-3 border-2 border-on-surface text-xs font-label-mono uppercase leading-tight max-w-[180px]">
+                <strong class="text-sm">Filter, AR Filter<br>& Surprise Outcome</strong>
+              </div>
+            </div>
           </div>
+          <!-- Smiley accent -->
+          <div class="absolute top-4 right-4 md:top-6 md:right-6 text-3xl md:text-4xl">😊</div>
+        </div>
 
-          <label
-            for="thresholdSlider"
-            class="block text-sm font-bold mb-1 tracking-wide"
-            >DARKNESS THRESHOLD</label
-          >
-          <div class="relative w-full h-[2px] bg-black mb-6 flex items-center">
-            <input
-              type="range"
-              id="thresholdSlider"
-              min="0"
-              max="200"
-              value="100"
-              class="absolute w-full appearance-none bg-transparent m-0 cursor-pointer z-10 h-6 custom-slider"
-            />
+        <!-- Floating sticker -->
+        <div class="absolute top-6 left-[3%] rotate-[-12deg] z-10 hidden md:block">
+          <div class="bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface p-2 font-label-mono neo-brutalist-shadow uppercase text-xs">
+            NO RULES HERE
           </div>
         </div>
 
-        <div id="btnRow" class="hidden w-full flex-col gap-3 mb-6">
-          <button
-            id="btnPrint"
-            class="w-full border-2 border-black bg-white text-black font-bold h-[5svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 tracking-widest uppercase"
-          >
-            PRINT
-          </button>
-          <button
-            id="btnDownload"
-            class="w-full border-2 border-black bg-white text-black font-bold h-[5svh] flex items-center justify-center transition-transform active:scale-95 tracking-widest uppercase"
-          >
-            DOWNLOAD
-          </button>
-          <button
-            id="btnRetake"
-            class="w-full bg-[#1b1a1c] text-white border-none font-bold h-[5svh] flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50 tracking-widest uppercase"
-          >
-            RETAKE
+        <!-- START SNAP CTA -->
+        <div class="mt-10 md:mt-16 relative z-20 group">
+          <button id="btnStart" class="bg-secondary-container text-on-secondary-container font-headline-lg text-2xl md:text-3xl px-10 md:px-12 py-6 md:py-8 border-4 border-on-surface uppercase italic flex items-center gap-3 active-neo-press neo-brutalist-shadow-lg">
+            START SNAP <span class="material-symbols-outlined text-[36px] md:text-[48px]" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
           </button>
         </div>
-      </div>
 
-      <!-- Thank you message (shown after print) -->
-      <div
-        id="thankYouMsg"
-        class="hidden text-center font-averia text-2xl font-bold text-black mb-4"
-      >
-        Thank you for coming!
-      </div>
+        <!-- THE PROCESS Section -->
+        <div class="w-full max-w-4xl mt-16 md:mt-24">
+          <h2 class="font-display-xl text-2xl md:text-3xl uppercase text-on-surface mb-8 font-black italic">THE PROCESS</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div class="process-card bg-[#c8c3f7] border-4 border-on-surface p-5 neo-brutalist-shadow relative">
+              <span class="font-label-mono text-[10px] uppercase tracking-widest bg-surface border border-on-surface px-2 py-0.5 inline-block mb-3">01. NOTICE</span>
+              <h3 class="font-headline-lg text-xl italic mb-2">Notice the Weird</h3>
+              <p class="font-body-reg text-sm text-on-surface-variant leading-relaxed">Spot a scenario that speaks to you. We didn't do perfect here; we do interesting. Look for the glitches.</p>
+              <div class="mt-4 text-2xl">👀</div>
+            </div>
+            <!-- Card 2 -->
+            <div class="process-card bg-tertiary-fixed border-4 border-on-surface p-5 neo-brutalist-shadow relative">
+              <span class="font-label-mono text-[10px] uppercase tracking-widest bg-surface border border-on-surface px-2 py-0.5 inline-block mb-3">02. CURIOUS</span>
+              <h3 class="font-headline-lg text-xl italic mb-2">Get Curious</h3>
+              <p class="font-body-reg text-sm text-on-surface-variant leading-relaxed">Interact with the scene. Use your body, move around. Let reality react to your energy.</p>
+              <div class="mt-4 text-2xl">🔍</div>
+            </div>
+            <!-- Card 3 -->
+            <div class="process-card bg-[#f7c3c8] border-4 border-on-surface p-5 neo-brutalist-shadow relative">
+              <span class="font-label-mono text-[10px] uppercase tracking-widest bg-surface border border-on-surface px-2 py-0.5 inline-block mb-3">03. ENTER</span>
+              <h3 class="font-headline-lg text-xl italic mb-2">Enter the Void</h3>
+              <p class="font-body-reg text-sm text-on-surface-variant leading-relaxed">Hit the capture button and capture the moment. No retakes. No filters, just raw chaotic beauty.</p>
+              <div class="mt-4 text-2xl">↩️</div>
+            </div>
+          </div>
+        </div>
 
-      <!-- Receipt Container (original - plain mode) -->
-      <div
-        id="receiptContainer"
-        class="hidden w-full max-w-[80svw] md:max-w-[420px] relative border-[2px] mb-[3svh] border-black"
-      >
-        <canvas
-          id="receiptCanvas"
-          class="w-full h-auto aspect-[2/3] object-cover block"
-        ></canvas>
-      </div>
+        <!-- Scrolling Marquee Ticker -->
+        <div class="w-screen -mx-6 md:-mx-margin mt-16 md:mt-20 overflow-hidden border-y-4 border-on-surface bg-on-surface py-4">
+          <div class="marquee-track">
+            <span class="font-display-xl text-lg md:text-xl text-surface uppercase italic tracking-wide whitespace-nowrap px-2">
+              * NO FILTERS * NO RULES * TOTAL CHAOS * SNAP NOW * BE WEIRD * REPEAT * NO FILTERS * NO RULES * TOTAL CHAOS * SNAP NOW * BE WEIRD * REPEAT *&nbsp;
+            </span>
+            <span class="font-display-xl text-lg md:text-xl text-surface uppercase italic tracking-wide whitespace-nowrap px-2">
+              * NO FILTERS * NO RULES * TOTAL CHAOS * SNAP NOW * BE WEIRD * REPEAT * NO FILTERS * NO RULES * TOTAL CHAOS * SNAP NOW * BE WEIRD * REPEAT *&nbsp;
+            </span>
+          </div>
+        </div>
 
-      <!-- Stencil Template Container -->
-      <div
-        id="stencilTemplateContainer"
-        class="hidden w-full max-w-[80svw] md:max-w-[420px] relative mb-[3svh]"
-      >
-        <canvas
-          id="stencilTemplateCanvas"
-          class="w-full h-auto block"
-          style="aspect-ratio: 944 / 1535"
-        ></canvas>
-      </div>
+        <!-- Spacer -->
+        <div class="h-12"></div>
+      </section>
 
-      <!-- Grayscale Template Container -->
-      <div
-        id="grayscaleTemplateContainer"
-        class="hidden w-full max-w-[80svw] md:max-w-[420px] relative mb-[3svh]"
-      >
-        <canvas
-          id="grayscaleTemplateCanvas"
-          class="w-full h-auto block"
-          style="aspect-ratio: 944 / 1535"
-        ></canvas>
-      </div>
 
-      <!-- Winner Template Container -->
-      <div
-        id="winnerTemplateContainer"
-        class="hidden w-full max-w-[80svw] md:max-w-[420px] relative mb-[3svh]"
-      >
-        <canvas
-          id="winnerTemplateCanvas"
-          class="w-full h-auto block"
-          style="aspect-ratio: 944 / 1535"
-        ></canvas>
-      </div>
+      <!-- 2. CAPTURE SCREEN -->
+      <section id="videoContainer" class="hidden max-w-7xl mx-auto px-4 md:px-6 h-[82svh] flex-col lg:flex-row gap-[2svh] w-full pt-[2svh] pb-[2svh]">
+        <div class="flex flex-col relative w-full lg:w-2/3 h-[50svh] lg:h-full">
+          <div class="relative bg-on-surface border-[5px] border-on-surface neo-brutalist-shadow-lg rotated-container flex flex-col h-full overflow-hidden">
+            <div class="bg-primary text-on-primary-container border-b-[5px] border-on-surface px-4 py-1.5 flex justify-between items-center flex-shrink-0 z-20">
+              <span class="font-label-mono text-[10px] md:text-xs uppercase tracking-widest">LIVE_FEED.FOTO</span>
+              <div class="flex gap-2">
+                <div class="w-3 h-3 bg-secondary-container border-2 border-on-surface"></div>
+                <div class="w-3 h-3 bg-tertiary-fixed border-2 border-on-surface"></div>
+              </div>
+            </div>
+            
+            <!-- Viewfinder -->
+            <div class="relative bg-surface-dim overflow-hidden group flex-1 min-h-0 flex items-center justify-center">
+              <video id="webcamVideo" autoplay playsinline muted class="aspect-[4/3] w-full h-auto object-cover mix-blend-multiply opacity-90"></video>
+              <div id="countdown" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8rem] text-secondary font-display-xl drop-shadow-md hidden pointer-events-none z-10">3</div>
+              <div id="cameraFlash" class="absolute inset-0 bg-white z-50 opacity-0 pointer-events-none transition-opacity duration-100"></div>
+              <div id="processingOverlay" class="absolute inset-0 bg-black/80 flex items-center justify-center z-20 hidden">
+                <span class="text-white text-2xl font-bold animate-pulse font-label-mono">Processing...</span>
+              </div>
+              
+              <!-- AR Overlays (Static Design) -->
+              <div class="absolute top-4 left-4 text-secondary transform -rotate-12 pointer-events-none scale-75 md:scale-100"><span class="material-symbols-outlined text-5xl md:text-7xl" style="font-variation-settings: 'FILL' 1;">star</span></div>
+              <div class="absolute inset-0 border-[10px] md:border-[20px] border-on-surface/10 pointer-events-none"></div>
+              <div class="absolute top-2 right-2 flex items-center gap-1 md:gap-2 bg-on-surface/80 text-surface p-1 md:p-2 font-label-mono text-[10px] md:text-xs">
+                <div class="w-1.5 h-1.5 md:w-2 md:h-2 bg-error rounded-full animate-pulse"></div> REC 00:12
+              </div>
+              
+              <!-- Floating Capture Button -->
+              <div class="absolute bottom-6 left-0 right-0 flex justify-center z-30">
+                <button id="btnCapture" class="bg-secondary text-on-secondary px-8 py-4 md:px-12 md:py-6 border-[3px] border-on-surface neo-brutalist-shadow active-neo-press transition-all flex items-center gap-4 disabled:opacity-50">
+                  <span class="material-symbols-outlined text-3xl md:text-4xl" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+                  <span class="font-display-xl text-2xl md:text-4xl tracking-tighter uppercase italic">START SEQUENCE</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="absolute -bottom-4 left-8 z-10 bg-tertiary-fixed text-on-tertiary-fixed px-6 py-1 border-2 border-on-surface neo-brutalist-shadow font-label-mono text-label-mono uppercase -rotate-3 hidden lg:block">
+            explore new angles
+          </div>
+        </div>
+
+        <!-- Sidebar / Gallery -->
+        <aside class="w-full lg:w-1/3 flex flex-col flex-shrink-0 h-[26svh] lg:h-full pb-4 lg:pb-0">
+          <div id="gallerySection" class="bg-surface border-[5px] border-on-surface neo-brutalist-shadow rotated-container-alt flex flex-col h-full">
+            <div class="bg-secondary-container text-on-secondary-container border-b-[5px] border-on-surface px-4 py-2 flex justify-between items-center flex-shrink-0">
+              <span class="font-label-mono text-label-mono uppercase">RECENT_ROLL</span>
+              <span id="photoCount" class="font-label-mono text-xs border border-on-secondary-container px-2">0 PHOTOS</span>
+            </div>
+            <!-- Fixed Grid for exactly 4 photos (1x4 mobile, 2x2 desktop) -->
+            <div id="galleryGrid" class="p-2 grid grid-cols-4 grid-rows-1 lg:grid-cols-2 lg:grid-rows-2 gap-1.5 lg:gap-3 flex-1 overflow-hidden"></div>
+            
+            <div class="p-4 border-t-[5px] border-on-surface bg-surface-container-low">
+              <button id="btnFinishCapture" class="w-full py-4 bg-primary text-on-primary font-headline-md italic border-[3px] border-on-surface neo-brutalist-shadow active-neo-press uppercase tracking-widest hidden">
+                 DONE SNAPPING
+              </button>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- 3. SELECTION / EDIT SCREEN -->
+      <section id="selectionSection" class="hidden px-4 md:px-margin h-[82svh] pt-[6svh] lg:pt-[2svh] pb-[2svh] max-w-7xl mx-auto w-full">
+        <div class="flex flex-col lg:flex-row gap-[2svh] w-full h-full">
+          <!-- Left: Preview Canvas Wrapper -->
+          <div id="editCanvasWrapper" class="flex-1 flex flex-col items-center justify-center relative min-h-0 h-[42svh] lg:h-full">
+            <!-- Canvas will be moved here -->
+          </div>
+          
+          <!-- Right: Frame picker -->
+          <aside class="w-full lg:w-[320px] flex-shrink-0 flex flex-col h-[34svh] lg:h-full pb-[1svh] lg:pb-0">
+            <div class="border-4 border-on-surface bg-surface-container-low neo-brutalist-shadow flex flex-col h-full justify-between">
+              <!-- Header -->
+              <div class="bg-chaos-blue text-white border-b-4 border-on-surface px-4 py-1.5 lg:px-5 lg:py-3 flex-shrink-0">
+                <h3 class="font-headline-lg text-sm lg:text-xl uppercase italic tracking-wide">CHOOSE FRAME</h3>
+              </div>
+              <!-- Frame options -->
+              <div class="p-2 lg:p-3 flex gap-1.5 lg:flex-col lg:gap-3 scrollbar-hide min-h-0 flex-1 lg:overflow-x-visible lg:overflow-y-auto">
+                <button class="frame-option selected flex-1 lg:flex-initial lg:w-full min-w-0 text-left px-1.5 py-1 lg:p-4 border-2 lg:border-3 border-on-surface bg-white neo-brutalist-shadow flex items-center justify-between gap-1" data-frame="playful">
+                  <div class="overflow-hidden min-w-0">
+                     <span class="font-headline-lg text-[11px] lg:text-lg block truncate leading-tight">Playful</span>
+                     <span class="frame-sub hidden lg:block font-label-mono text-[7px] lg:text-[10px] uppercase opacity-60 mt-0.5 truncate">Y2K</span>
+                  </div>
+                  <span class="material-symbols-outlined text-sm lg:text-xl flex-shrink-0">palette</span>
+                </button>
+                <button class="frame-option flex-1 lg:flex-initial lg:w-full min-w-0 text-left px-1.5 py-1 lg:p-4 border-2 lg:border-3 border-on-surface bg-[#c8c3f7] neo-brutalist-shadow flex items-center justify-between gap-1" data-frame="chaotic">
+                  <div class="overflow-hidden min-w-0">
+                     <span class="font-headline-lg text-[11px] lg:text-lg block truncate leading-tight">Brutalist</span>
+                     <span class="frame-sub hidden lg:block font-label-mono text-[7px] lg:text-[10px] uppercase opacity-60 mt-0.5 truncate">Chaotic</span>
+                  </div>
+                  <span class="material-symbols-outlined text-sm lg:text-xl flex-shrink-0">blur_on</span>
+                </button>
+                <button class="frame-option flex-1 lg:flex-initial lg:w-full min-w-0 text-left px-1.5 py-1 lg:p-4 border-2 lg:border-3 border-on-surface bg-tertiary-fixed neo-brutalist-shadow flex items-center justify-between gap-1" data-frame="graphic">
+                  <div class="overflow-hidden min-w-0">
+                     <span class="font-headline-lg text-[11px] lg:text-lg block truncate leading-tight">Graphic</span>
+                     <span class="frame-sub hidden lg:block font-label-mono text-[7px] lg:text-[10px] uppercase opacity-60 mt-0.5 truncate">Contrast</span>
+                  </div>
+                  <span class="material-symbols-outlined text-sm lg:text-xl flex-shrink-0">grid_view</span>
+                </button>
+              </div>
+              
+              <!-- Selection Actions -->
+              <div class="p-2 lg:p-3 pt-0 flex gap-2 flex-shrink-0">
+                <button id="btnSelectionHome" class="flex-1 py-2 lg:py-3 bg-surface text-on-surface border-2 border-on-surface neo-brutalist-shadow-sm active-neo-press flex items-center justify-center gap-1 lg:gap-2">
+                  <span class="material-symbols-outlined text-base lg:text-xl">home</span>
+                  <span class="font-label-mono text-[10px] lg:text-xs uppercase font-bold">RESTART</span>
+                </button>
+                <button id="btnConfirmSelection" disabled class="flex-[2] py-2.5 lg:py-4 bg-secondary text-on-secondary border-4 border-on-surface neo-brutalist-shadow active-neo-press transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
+                  <span class="font-display-xl text-base lg:text-xl uppercase italic tracking-widest font-black">SELESAI</span>
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- 4. RESULT / SHARING SCREEN -->
+      <section id="resultSection" class="hidden px-4 md:px-margin h-[82svh] max-w-7xl mx-auto w-full pt-[2svh] pb-[2svh] flex-col">
+        <!-- THANK YOU banner + Timer (top of result page) -->
+        <div class="relative flex justify-center items-center mb-[2svh] flex-shrink-0">
+          <div class="bg-tertiary text-on-tertiary border-4 border-on-surface px-6 py-2 md:px-10 md:py-3 neo-brutalist-shadow-lg -rotate-2">
+            <span class="font-display-xl text-2xl md:text-4xl tracking-tighter uppercase italic">THANK YOU!</span>
+          </div>
+          <!-- Timer (top right) -->
+          <div class="absolute right-0 top-1/2 -translate-y-1/2">
+            <span class="font-label-mono text-xs md:text-base uppercase tracking-widest text-error font-bold flex items-center gap-1 md:gap-2">
+              <span class="material-symbols-outlined text-lg md:text-2xl">timer</span>
+              <span id="shareTimerTxt">60</span>s
+            </span>
+          </div>
+        </div>
+        <div class="flex flex-col lg:flex-row gap-[2svh] w-full flex-1 min-h-0">
+          <!-- Left: Shared Canvas Wrapper -->
+          <div id="shareCanvasWrapper" class="flex-1 flex flex-col items-center justify-center relative min-h-0 h-[42svh] lg:h-full">
+            <!-- Canvas moved here in share phase -->
+          </div>
+          
+          <!-- Hidden canvas container, moved by JS -->
+          <div id="canvasStorage" class="hidden">
+            <div id="stencilTemplateContainer" class="flex-1 flex flex-col items-center justify-center relative min-h-0 h-full w-full">
+               <!-- Stickers -->
+               <div class="absolute -top-2 -right-2 md:-right-8 z-30 rotate-6">
+                 <div class="bg-surface border-2 border-on-surface px-2 py-0.5 md:px-3 md:py-1 font-label-mono text-[10px] md:text-xs neo-brutalist-shadow uppercase">#SEENSOON</div>
+               </div>
+               <div class="absolute top-6 -left-2 md:-left-10 z-30 -rotate-12">
+                 <div class="bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface px-2 py-0.5 md:px-3 md:py-1 font-label-mono text-[10px] md:text-xs neo-brutalist-shadow uppercase">CHAOS...</div>
+               </div>
+               <!-- Canvas frame -->
+               <div class="bg-on-surface p-2 border-4 border-on-surface neo-brutalist-shadow-lg h-full inline-block group rotate-1">
+                 <canvas id="stencilTemplateCanvas" class="h-full w-auto block bg-white" style="aspect-ratio: 1000 / 1500"></canvas>
+               </div>
+               <!-- Heart accent -->
+               <div class="absolute -bottom-6 -right-6 z-30 w-12 h-12 bg-tertiary rounded-full border-3 border-on-surface flex items-center justify-center text-white text-xl">💚</div>
+            </div>
+          </div>
+
+          <!-- Right: Share Side (no container) -->
+          <aside class="w-full lg:w-[320px] flex-shrink-0 flex flex-col h-auto lg:h-full pb-[1svh] lg:pb-0 gap-3 md:gap-4 justify-center">
+            <!-- QR + Text row -->
+            <div class="flex items-center gap-3 md:gap-4">
+              <!-- QR Code -->
+              <div class="bg-white border-4 border-on-surface p-2 md:p-3 neo-brutalist-shadow rotate-1 flex-shrink-0 w-[100px] md:w-[140px]">
+                <img src="./assets/qr-placeholder.png" alt="QR Code" class="w-full h-auto object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'192\' height=\'192\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'3\' y=\'3\' width=\'18\' height=\'18\' rx=\'2\' ry=\'2\'/><rect x=\'7\' y=\'7\' width=\'3\' height=\'3\'/><rect x=\'14\' y=\'7\' width=\'3\' height=\'3\'/><rect x=\'7\' y=\'14\' width=\'3\' height=\'3\'/><rect x=\'14\' y=\'14\' width=\'3\' height=\'3\'/></svg>'">
+              </div>
+              <p class="font-body-reg text-on-surface text-xs md:text-sm flex-1 text-left">Scan the QR code to download your chaotic masterpiece.</p>
+            </div>
+
+            <!-- Selesai / Home Button (smaller) -->
+            <button id="btnShareSelesai" class="w-full bg-secondary text-on-secondary border-2 md:border-3 border-on-surface py-2 md:py-2.5 neo-brutalist-shadow active-neo-press flex items-center justify-center gap-2">
+              <span class="font-display-xl text-base md:text-lg uppercase italic tracking-widest">SELESAI</span>
+              <span class="material-symbols-outlined text-base md:text-lg">home</span>
+            </button>
+          </aside>
+        </div>
+
+
+
+        <div id="thankYouMsg" class="hidden text-center font-display-xl text-2xl text-on-surface mt-8 bg-surface-container-high border-2 border-on-surface p-4 neo-brutalist-shadow">
+          Printing... Don't forget to grab your photo!
+        </div>
+      </section>
+
+      <!-- HIDDEN DUMMY ELEMENTS to prevent JS errors -->
+      <div id="controlsBlock" class="hidden"></div>
+      <div id="captureHint" class="hidden"></div>
+      <div id="receiptContainer" class="hidden"><canvas id="receiptCanvas"></canvas></div>
+      <div id="grayscaleTemplateContainer" class="hidden"><canvas id="grayscaleTemplateCanvas"></canvas></div>
+      <div id="winnerTemplateContainer" class="hidden"><canvas id="winnerTemplateCanvas"></canvas></div>
+      <!-- Dummy sliders to prevent errors if they are queried -->
+      <button id="modeStencil" class="hidden"></button>
+      <button id="modeGrayscale" class="hidden"></button>
+      <button id="modeWinner" class="hidden"></button>
+
     </main>
 
-    <!-- ===== FOOTER ===== -->
-    <footer
-      id="mainFooter"
-      class="w-full px-6 pb-[3svh] pt-3 flex-shrink-0 flex flex-col items-center gap-3"
-    >
-      <!-- Controls -->
-      <div
-        id="controlsBlock"
-        class="w-full flex flex-col items-center gap-[2svh] z-30"
-      >
-        <!-- Start Button -->
-        <button
-          id="btnStart"
-          class="flex bg-black font text-white border-none text-[3svh] cursor-pointer hover:bg-neutral-800 w-full max-w-[90svw] md:max-w-[30svw] py-[.5svh] items-center justify-center transition-transform active:scale-95 tracking-widest uppercase"
-        >
-          START
-        </button>
-
-        <!-- Capture -->
-        <button
-          id="btnCapture"
-          class="hidden bg-black font text-white border-none text-[3svh] cursor-pointer hover:bg-neutral-800 w-full max-w-[90svw] md:max-w-[30svw] py-[.5svh] items-center justify-center transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed tracking-widest uppercase"
-        >
-          CAPTURE
-        </button>
-        <div
-          id="captureHint"
-          class="hidden text-black font-bold animate-pulse text-lg"
-        >
-          CHEESE!
-        </div>
+    <!-- Bottom Navigation Shell -->
+    <nav id="mainFooter" class="flex-shrink-0 w-full flex justify-around items-center px-4 h-[10svh] bg-primary-fixed border-t-4 border-on-surface z-50">
+      <div class="nav-item active flex flex-col items-center justify-center text-on-surface px-4 py-2 cursor-pointer" data-nav="start">
+        <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+        <span class="font-label-mono text-[10px] font-bold uppercase mt-0.5">START</span>
       </div>
-
-      <!-- RSVP Info -->
-      <div
-        id="footerInfo"
-        class="text-right w-[90svw] mt-[5svh] text-[3.4svw] font-bold leading-snug"
-      >
-        <div class="text-[2.5svw]">
-          RSVP <span class="text-[2svw]">0889-0992-9999</span>
-        </div>
-        <div class="font-medium">
-          Pot Boy Aru, Row 9, Jl. Bulungan No.9, Kramat Pela
-        </div>
+      <div class="nav-item flex flex-col items-center justify-center text-on-surface px-4 py-2 cursor-pointer" data-nav="snap">
+        <span class="material-symbols-outlined text-xl">photo_camera</span>
+        <span class="font-label-mono text-[10px] font-bold uppercase mt-0.5">SNAP</span>
       </div>
-    </footer>
+      <div class="nav-item flex flex-col items-center justify-center text-on-surface px-4 py-2 cursor-pointer" data-nav="edit">
+        <span class="material-symbols-outlined text-xl">auto_fix_high</span>
+        <span class="font-label-mono text-[10px] font-bold uppercase mt-0.5">EDIT</span>
+      </div>
+      <div class="nav-item flex flex-col items-center justify-center text-on-surface px-4 py-2 cursor-pointer" data-nav="share">
+        <span class="material-symbols-outlined text-xl">send</span>
+        <span class="font-label-mono text-[10px] font-bold uppercase mt-0.5">SHARE</span>
+      </div>
+    </nav>
 
     <script>
       // State elements
       const imageContainer = document.getElementById("imageContainer");
       const slideshowImgs = document.querySelectorAll(".slideshow-img");
       const videoContainer = document.getElementById("videoContainer");
-      const mjpegStream = document.getElementById("mjpegStream");
+      const webcamVideo = document.getElementById("webcamVideo");
       const receiptCanvas = document.getElementById("receiptCanvas");
       const countdownEl = document.getElementById("countdown");
       const processingOverlay = document.getElementById("processingOverlay");
@@ -386,6 +514,7 @@
       const btnCapture = document.getElementById("btnCapture");
       const captureHint = document.getElementById("captureHint");
       const btnPrint = document.getElementById("btnPrint");
+      const btnSave = document.getElementById("btnSave");
       const btnDownload = document.getElementById("btnDownload");
       const btnRetake = document.getElementById("btnRetake");
       const btnRow = document.getElementById("btnRow");
@@ -397,32 +526,26 @@
 
       let ws = null;
       let previewActive = false;
+      let localStream = null;
       let originalFrameData = null; // Store raw capture for re-processing
       let currentMode = "stencil"; // 'stencil' or 'grayscale'
+
+      // State
+      let capturedPhotos = []; // Array of { original, processed } dataURLs
+      let selectedPhotoIndices = [];
+      let requiredSlots = 4;
+      let captureCount = 0;
 
       // Image slideshow (toggle visibility every 4s)
       let slideshowIndex = 0;
       let slideshowInterval = null;
 
-      if (!hasCode) {
-        // Show "no params" page
-        mainHeader.classList.add("hidden");
-        noParamsHeader.classList.remove("hidden");
-        noParamsHeader.classList.add("flex");
-        controlsBlock.classList.add("hidden");
-
-        imageContainer.classList.remove("pt-[10svh]", "h-[55svh]");
-        imageContainer.classList.add("flex-1", "w-full", "min-h-0");
-
-        slideshowImgs.forEach((img) => img.classList.add("hidden"));
-        document.getElementById("defaultAsset").classList.remove("hidden");
-      } else {
-        slideshowInterval = setInterval(() => {
-          slideshowImgs[slideshowIndex].classList.add("hidden");
-          slideshowIndex = (slideshowIndex + 1) % slideshowImgs.length;
-          slideshowImgs[slideshowIndex].classList.remove("hidden");
-        }, 4000);
-      }
+      slideshowInterval = setInterval(() => {
+        if (!slideshowImgs[slideshowIndex]) return;
+        slideshowImgs[slideshowIndex].classList.add("hidden");
+        slideshowIndex = (slideshowIndex + 1) % slideshowImgs.length;
+        slideshowImgs[slideshowIndex].classList.remove("hidden");
+      }, 4000);
 
       // WebSocket Setup
       function connectWS() {
@@ -441,6 +564,32 @@
       }
       connectWS();
 
+
+      async function startWebcam() {
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+              facingMode: "user",
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            } 
+          });
+          webcamVideo.srcObject = localStream;
+          return true;
+        } catch (err) {
+          console.error("Error accessing webcam:", err);
+          alert("Could not access webcam. Please ensure you have given permission.");
+          return false;
+        }
+      }
+
+      function stopWebcam() {
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          localStream = null;
+          webcamVideo.srcObject = null;
+        }
+      }
 
       function handleWSMessage(data) {
         console.log("WS Data:", data);
@@ -464,76 +613,355 @@
         btnStart.textContent = "STARTING...";
         clearInterval(slideshowInterval);
 
-        try {
-          const response = await fetch("/api/preview/start", { method: "POST" });
-          const result = await response.json();
+        const success = await startWebcam();
+        if (success) {
+          btnStart.classList.add("hidden");
+          btnStart.classList.remove("flex");
+          imageContainer.classList.add("hidden");
 
-          if (result.success) {
-            btnStart.classList.add("hidden");
-            btnStart.classList.remove("flex");
-            imageContainer.classList.add("hidden");
+          videoContainer.classList.remove("hidden");
+          videoContainer.classList.add("flex");
 
-            mjpegStream.src = result.stream_url + "?t=" + Date.now();
-            videoContainer.classList.remove("hidden");
-            videoContainer.classList.add("flex");
-
-            btnCapture.classList.remove("hidden");
-            btnCapture.classList.add("flex");
-            previewActive = true;
-          } else {
-            alert("Could not start preview: " + result.error);
-          }
-        } catch (e) {
-          alert("Error connecting to server: " + e.message);
+          btnCapture.classList.remove("hidden");
+          btnCapture.classList.add("flex");
+          previewActive = true;
+          setActiveNav("snap");
+          
+          // Render initial 4 empty slots
+          updateGallery();
+        } else {
+          btnStart.textContent = "START";
+          btnStart.disabled = false;
         }
-        btnStart.textContent = "START";
-        btnStart.disabled = false;
       });
 
-      // Step 3: Capture with frontend countdown
-      btnCapture.addEventListener("click", () => {
+      // Step 3: Auto-capture sequence
+      btnCapture.addEventListener("click", async () => {
         btnCapture.disabled = true;
-        btnCapture.textContent = "CAPTURING...";
-
-        // Run countdown in browser
-        let count = 3;
-        countdownEl.textContent = count;
-        countdownEl.classList.remove("hidden");
-        countdownEl.classList.add("block");
-
-        const interval = setInterval(async () => {
-          count--;
-          if (count > 0) {
+        btnCapture.classList.add("hidden");
+        btnCapture.classList.remove("flex");
+        
+        for (let photoNum = 0; photoNum < 4; photoNum++) {
+          await new Promise(resolve => {
+            let count = 7;
             countdownEl.textContent = count;
-          } else {
-            clearInterval(interval);
-            countdownEl.classList.add("hidden");
-            countdownEl.classList.remove("block");
-
-            // Show processing overlay
-            processingOverlay.classList.remove("hidden");
-
-            // Call capture on Pi
-            try {
-              const response = await fetch("/api/capture", { method: "POST" });
-              const result = await response.json();
-              if (result.success) {
-                processAndShowReceipt();
+            countdownEl.classList.remove("hidden");
+            countdownEl.classList.add("block");
+            
+            const interval = setInterval(() => {
+              count--;
+              if (count > 0) {
+                countdownEl.textContent = count;
               } else {
-                alert("Capture failed: " + result.error);
-                processingOverlay.classList.add("hidden");
-                btnCapture.disabled = false;
-                btnCapture.textContent = "CAPTURE";
+                clearInterval(interval);
+                countdownEl.classList.add("hidden");
+                countdownEl.classList.remove("block");
+                
+                // Flash effect
+                const flash = document.getElementById("cameraFlash");
+                flash.style.opacity = "1";
+                setTimeout(() => { flash.style.opacity = "0"; }, 100);
+                
+                // Capture photo
+                captureFrame();
+                resolve();
               }
-            } catch (e) {
-              alert("Error: " + e.message);
-              processingOverlay.classList.add("hidden");
-              btnCapture.disabled = false;
-              btnCapture.textContent = "CAPTURE";
-            }
+            }, 1000);
+          });
+          
+          if (photoNum < 3) {
+             // slight pause before next countdown
+             await new Promise(r => setTimeout(r, 500));
           }
+        }
+        
+        // Auto-finish after 4 photos
+        setTimeout(() => {
+          document.getElementById("btnFinishCapture").click();
         }, 1000);
       });
+
+      function captureFrame() {
+        const outW = 800;
+        const outH = 1200;
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = outW;
+        tempCanvas.height = outH;
+        const ctx = tempCanvas.getContext("2d");
+
+        const imgW = webcamVideo.videoWidth;
+        const imgH = webcamVideo.videoHeight;
+        const targetRatio = outW / outH;
+
+        let sx, sy, sw, sh;
+        const imgRatio = imgW / imgH;
+
+        if (imgRatio > targetRatio) {
+          sh = imgH;
+          sw = imgH * targetRatio;
+          sx = (imgW - sw) / 2;
+          sy = 0;
+        } else {
+          sw = imgW;
+          sh = imgW / targetRatio;
+          sx = 0;
+          sy = (imgH - sh) / 2;
+        }
+
+        ctx.drawImage(webcamVideo, sx, sy, sw, sh, 0, 0, outW, outH);
+        
+        // Store the original frame
+        const dataUrl = tempCanvas.toDataURL("image/jpeg", 0.9);
+        capturedPhotos.push(dataUrl);
+        
+        updateGallery();
+        
+        // Show gallery and finish button
+        document.getElementById("gallerySection").classList.remove("hidden");
+        document.getElementById("photoCount").textContent = `${capturedPhotos.length} PHOTOS`;
+      }
+
+      function updateGallery() {
+        const grid = document.getElementById("galleryGrid");
+        grid.innerHTML = "";
+        for (let i = 0; i < 4; i++) {
+          if (i < capturedPhotos.length) {
+            const img = document.createElement("img");
+            img.src = capturedPhotos[i];
+            img.className = "w-full h-auto object-cover aspect-[4/3] gallery-item border-[3px] border-on-surface";
+            grid.appendChild(img);
+          } else {
+            const empty = document.createElement("div");
+            empty.className = "w-full h-full border-2 border-dashed border-on-surface/30 flex flex-col items-center justify-center font-label-mono text-on-surface/50 text-xs gap-1";
+            empty.innerHTML = `<span class="material-symbols-outlined text-on-surface/30 text-xl" style="font-variation-settings: 'FILL' 0;">photo_camera</span> ${i + 1}/4`;
+            grid.appendChild(empty);
+          }
+        }
+      }
+
+      // Finish Capturing -> Move to Edit (Selection) Phase
+      document.getElementById("btnFinishCapture").addEventListener("click", () => {
+        stopWebcam();
+        videoContainer.classList.add("hidden");
+        videoContainer.classList.remove("flex");
+        
+        showEditScreen();
+      });
+
+      // Nav active state helper
+      function setActiveNav(name) {
+        document.querySelectorAll('.nav-item').forEach(n => {
+          n.classList.remove('active');
+          if (n.dataset.nav === name) n.classList.add('active');
+        });
+      }
+
+      let currentFrameType = "playful";
+
+      // Frame selection handlers
+      document.querySelectorAll('.frame-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.frame-option').forEach(b => b.classList.remove('selected', 'bg-white', 'bg-[#c8c3f7]', 'bg-tertiary-fixed'));
+          btn.classList.add('selected');
+          
+          currentFrameType = btn.dataset.frame;
+          
+          // Re-apply background colors for selected state aesthetics
+          if(currentFrameType === 'playful') btn.classList.add('bg-white');
+          else if(currentFrameType === 'chaotic') btn.classList.add('bg-[#c8c3f7]');
+          else if(currentFrameType === 'graphic') btn.classList.add('bg-tertiary-fixed');
+          
+          generateResultFrame(currentFrameType);
+        });
+      });
+
+      function showEditScreen() {
+        // Move canvas to edit wrapper
+        document.getElementById("editCanvasWrapper").appendChild(document.getElementById("stencilTemplateContainer"));
+        
+        const section = document.getElementById("selectionSection");
+        section.classList.remove("hidden");
+        section.classList.add("flex");
+        
+        setActiveNav("edit");
+        
+        // Ensure default frame button is visually selected
+        const defaultBtn = document.querySelector('#selectionSection .frame-option[data-frame="playful"]');
+        if(defaultBtn) defaultBtn.click();
+        else generateResultFrame(currentFrameType);
+        
+        // Enable SELESAI button after initial generation
+        document.getElementById("btnConfirmSelection").disabled = false;
+      }
+
+      let shareTimer = null;
+      function startShareTimer() {
+        let timeLeft = 60;
+        const txt = document.getElementById("shareTimerTxt");
+
+        clearInterval(shareTimer);
+        txt.textContent = timeLeft;
+
+        shareTimer = setInterval(() => {
+          timeLeft--;
+          txt.textContent = timeLeft;
+
+          if (timeLeft <= 0) {
+            clearInterval(shareTimer);
+            resetToHome();
+          }
+        }, 1000);
+      }
+
+      // SELESAI (Edit) -> SHARE Phase
+      document.getElementById("btnConfirmSelection").addEventListener("click", () => {
+        // Move canvas to share wrapper
+        document.getElementById("shareCanvasWrapper").appendChild(document.getElementById("stencilTemplateContainer"));
+        
+        document.getElementById("selectionSection").classList.add("hidden");
+        document.getElementById("selectionSection").classList.remove("flex");
+        
+        const section = document.getElementById("resultSection");
+        section.classList.remove("hidden");
+        section.classList.add("flex");
+        
+        setActiveNav("share");
+        startShareTimer();
+      });
+
+      // SELESAI (Share) -> HOME
+      document.getElementById("btnShareSelesai").addEventListener("click", () => {
+        clearInterval(shareTimer);
+        document.getElementById("btnHome").click();
+      });
+      function generateResultFrame(frameType) {
+        const outW = 1000;
+        const outH = 1500;
+        
+        stencilTemplateCanvas.width = outW;
+        stencilTemplateCanvas.height = outH;
+        const ctx = stencilTemplateCanvas.getContext("2d");
+        
+        // Show processing state
+        processingOverlay.classList.remove("hidden");
+        
+        // Load background frame asset
+        const bgImg = new Image();
+        if (frameType === "playful") {
+          bgImg.src = "./assets/frame-bg-1.png";
+        } else if (frameType === "chaotic") {
+          bgImg.src = "./assets/frame-bg-2.png";
+        } else {
+          bgImg.src = "./assets/frame-bg-3.png";
+        }
+        
+        bgImg.onload = async () => {
+          // Fill background in case image doesn't cover completely
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, outW, outH);
+          
+          // Draw background image scaled to cover
+          const scale = Math.max(outW / bgImg.width, outH / bgImg.height);
+          const x = (outW / 2) - (bgImg.width / 2) * scale;
+          const y = (outH / 2) - (bgImg.height / 2) * scale;
+          ctx.drawImage(bgImg, x, y, bgImg.width * scale, bgImg.height * scale);
+          
+          // Define photo slot coordinates based on frame type
+          // All slots will be roughly 400x533 (3:4 ratio)
+          const pW = 400;
+          const pH = 533;
+          let slots = [];
+          
+          if (frameType === "playful") {
+             // 2x2 grid, straight, playful placement
+             slots = [
+               { x: 70, y: 150, rot: 0 },
+               { x: 530, y: 150, rot: 0 },
+               { x: 70, y: 750, rot: 0 },
+               { x: 530, y: 750, rot: 0 }
+             ];
+          } else if (frameType === "chaotic") {
+             // Scattered, rotated slots for messy look
+             slots = [
+               { x: 60, y: 120, rot: -0.08 },
+               { x: 520, y: 200, rot: 0.05 },
+               { x: 90, y: 760, rot: 0.06 },
+               { x: 480, y: 820, rot: -0.04 }
+             ];
+          } else { // graphic
+             // Rigid centered 2x2 grid overlapping
+             slots = [
+               { x: 80, y: 180, rot: 0 },
+               { x: 520, y: 180, rot: 0 },
+               { x: 80, y: 760, rot: 0 },
+               { x: 520, y: 760, rot: 0 }
+             ];
+          }
+          
+          // Load photos and draw them into slots
+          const promises = capturedPhotos.slice(0, 4).map((src) => {
+            return new Promise((resolve) => {
+              const img = new Image();
+              img.onload = () => resolve(img);
+              img.src = src;
+            });
+          });
+          
+          const loadedPhotos = await Promise.all(promises);
+          
+          loadedPhotos.forEach((img, idx) => {
+             const slot = slots[idx];
+             if(!slot) return;
+             
+             ctx.save();
+             // Move to center of slot for rotation
+             ctx.translate(slot.x + pW/2, slot.y + pH/2);
+             ctx.rotate(slot.rot);
+             
+             // Draw thick black border for all styles to pop against background
+             ctx.fillStyle = "#000000";
+             ctx.fillRect(-pW/2 - 10, -pH/2 - 10, pW + 20, pH + 20);
+             
+             // Draw white inner border
+             ctx.fillStyle = "#ffffff";
+             ctx.fillRect(-pW/2 - 5, -pH/2 - 5, pW + 10, pH + 10);
+             
+             // Draw photo (object cover equivalent for 3:4)
+             const imgRatio = img.width / img.height;
+             const targetRatio = pW / pH;
+             let sx, sy, sw, sh;
+             if (imgRatio > targetRatio) {
+               sw = img.height * targetRatio;
+               sh = img.height;
+               sx = (img.width - sw) / 2;
+               sy = 0;
+             } else {
+               sw = img.width;
+               sh = img.width / targetRatio;
+               sx = 0;
+               sy = (img.height - sh) / 2;
+             }
+             ctx.drawImage(img, sx, sy, sw, sh, -pW/2, -pH/2, pW, pH);
+             ctx.restore();
+          });
+          
+          originalFrameData = ctx.getImageData(0, 0, outW, outH);
+          
+          // Add seensoon logo/branding at the bottom
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(0, outH - 80, outW, 80);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 40px 'Courier New', Courier, monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("S E E N S O O N", outW/2, outH - 25);
+          
+          // Show the result
+          stencilTemplateContainer.classList.remove("hidden");
+          document.getElementById("btnRow").classList.remove("hidden");
+          document.getElementById("btnRow").classList.add("flex");
+          processingOverlay.classList.add("hidden");
+        };
+      }
 
       function showProcessing() {
         processingOverlay.classList.remove("hidden");
@@ -549,14 +977,10 @@
         const w = receiptCanvas.width;
         const h = receiptCanvas.height;
 
-        // Rotate 180 degrees (Pi camera is upside down)
-        ctx.translate(outW, outH);
-        ctx.rotate(Math.PI);
-
-        // Draw the MJPEG stream image onto canvas
+        // Draw the webcam video onto canvas
         // Calculate crop for object-cover style (2:3 target)
-        const imgW = mjpegStream.naturalWidth;
-        const imgH = mjpegStream.naturalHeight;
+        const imgW = webcamVideo.videoWidth;
+        const imgH = webcamVideo.videoHeight;
         const targetRatio = 2 / 3;
 
         let sx, sy, sw, sh;
@@ -574,7 +998,7 @@
           sy = (imgH - sh) / 2;
         }
 
-        ctx.drawImage(mjpegStream, sx, sy, sw, sh, 0, 0, outW, outH);
+        ctx.drawImage(webcamVideo, sx, sy, sw, sh, 0, 0, outW, outH);
 
         // Store original pixels so we can re-threshold without losing detail
         originalFrameData = ctx.getImageData(0, 0, w, h);
@@ -582,9 +1006,10 @@
         // Initial render
         applyFilters();
 
-        // 2. Clear UI
+        // 2. Clear UI & Stop Webcam
         videoContainer.classList.add("hidden");
         btnCapture.classList.add("hidden");
+        stopWebcam();
 
         // Show the correct template container based on current mode
         receiptContainer.classList.add("hidden");
@@ -609,13 +1034,7 @@
         const mainFooter = document.getElementById("mainFooter");
         mainFooter.classList.add("hidden");
 
-        // Make page scrollable so receipt is fully visible
-        document.body.classList.remove("overflow-hidden", "h-[100svh]");
-        document.body.classList.add(
-          "overflow-y-auto",
-          "min-h-[100svh]",
-          "h-auto",
-        );
+        // Make page scrollable handling removed as layout is fixed 100svh
       }
 
       const thresholdSlider = document.getElementById("thresholdSlider");
@@ -664,474 +1083,113 @@
         preloadTemplateImage("winner"),
       ]);
 
-      // Photo placement regions (pixel coords on 944x1535 template)
-      // These define where the photo placeholder sits on each template
-      const templatePhotoRegions = {
-        stencil: { x: 60, y: 339, w: 824, h: 859 },
-        grayscale: { x: 0, y: 0, w: 762, h: 1534 },
-        winner: { x: 69, y: 436, w: 809, h: 432 },
-      };
+      // Cleaned up old single-photo filter modes
 
-      modeStencil.addEventListener("click", () => setMode("stencil"));
-      modeGrayscale.addEventListener("click", () => setMode("grayscale"));
-      modeWinner.addEventListener("click", () => setMode("winner"));
+      function resetToHome() {
+        clearInterval(shareTimer);
+        
+        // Reset state
+        capturedPhotos = [];
+        const photoCountEl = document.getElementById("photoCount");
+        if(photoCountEl) photoCountEl.textContent = "0 PHOTOS";
+        const galleryGridEl = document.getElementById("galleryGrid");
+        if(galleryGridEl) galleryGridEl.innerHTML = "";
 
-      function setMode(mode) {
-        currentMode = mode;
-        const allModeButtons = [modeStencil, modeGrayscale, modeWinner];
-        const activeClasses = [
-          "text-black",
-          "border",
-          "border-black",
-          "px-2",
-          "py-0.5",
-        ];
-
-        // Reset all buttons
-        allModeButtons.forEach((btn) => {
-          btn.classList.remove(...activeClasses);
-          btn.classList.add("text-gray-300");
-        });
-
-        // Activate selected button
-        const activeBtn =
-          mode === "stencil"
-            ? modeStencil
-            : mode === "grayscale"
-              ? modeGrayscale
-              : modeWinner;
-        activeBtn.classList.add(...activeClasses);
-        activeBtn.classList.remove("text-gray-300");
-
-        // Set slider ranges per mode
-        if (mode === "stencil" || mode === "winner") {
-          thresholdSlider.min = 0;
-          thresholdSlider.max = 200;
-          thresholdSlider.value = 100;
-        } else {
-          thresholdSlider.min = -160;
-          thresholdSlider.max = 0;
-          thresholdSlider.value = -80;
-        }
-
-        // Show/hide the correct containers
-        receiptContainer.classList.add("hidden");
-        receiptContainer.classList.remove("flex");
-        stencilTemplateContainer.classList.add("hidden");
-        grayscaleTemplateContainer.classList.add("hidden");
-        winnerTemplateContainer.classList.add("hidden");
-
-        if (mode === "stencil") {
-          stencilTemplateContainer.classList.remove("hidden");
-        } else if (mode === "grayscale") {
-          grayscaleTemplateContainer.classList.remove("hidden");
-        } else if (mode === "winner") {
-          winnerTemplateContainer.classList.remove("hidden");
-        }
-
-        applyFilters();
-      }
-
-      thresholdSlider.addEventListener("input", (e) => {
-        applyFilters();
-      });
-
-      function applyStencilFilter(srcData, w, h, sliderVal) {
-        let imageData = new ImageData(
-          new Uint8ClampedArray(srcData.data),
-          srcData.width,
-          srcData.height,
-        );
-        let data = imageData.data;
-
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i],
-            g = data[i + 1],
-            b = data[i + 2],
-            a = data[i + 3];
-          if (a === 0) {
-            data[i] = 255;
-            data[i + 1] = 255;
-            data[i + 2] = 255;
-            data[i + 3] = 255;
-            continue;
-          }
-          let gray = 0.299 * r + 0.587 * g + 0.114 * b;
-          let finalVal = gray < sliderVal ? 0 : 255;
-          data[i] = finalVal;
-          data[i + 1] = finalVal;
-          data[i + 2] = finalVal;
-          data[i + 3] = 255;
-        }
-        return imageData;
-      }
-
-      function applyGrayscaleFilter(srcData, w, h, sliderVal) {
-        let imageData = new ImageData(
-          new Uint8ClampedArray(srcData.data),
-          srcData.width,
-          srcData.height,
-        );
-        let data = imageData.data;
-
-        const bayerMatrix8x8 = [
-          [0, 48, 12, 60, 3, 51, 15, 63],
-          [32, 16, 44, 28, 35, 19, 47, 31],
-          [8, 56, 4, 52, 11, 59, 7, 55],
-          [40, 24, 36, 20, 43, 27, 39, 23],
-          [2, 50, 14, 62, 1, 49, 13, 61],
-          [34, 18, 46, 30, 33, 17, 45, 29],
-          [10, 58, 6, 54, 9, 57, 5, 53],
-          [42, 26, 38, 22, 41, 25, 37, 21],
-        ].map((row) => row.map((v) => v * 4));
-
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i],
-            g = data[i + 1],
-            b = data[i + 2],
-            a = data[i + 3];
-          if (a === 0) {
-            data[i] = 255;
-            data[i + 1] = 255;
-            data[i + 2] = 255;
-            data[i + 3] = 255;
-            continue;
-          }
-          let gray = 0.299 * r + 0.587 * g + 0.114 * b;
-          let adjustedGray = Math.min(255, Math.max(0, gray + sliderVal));
-          const pixelIndex = i / 4;
-          const x = pixelIndex % w;
-          const y = Math.floor(pixelIndex / w);
-          const threshold = bayerMatrix8x8[y % 8][x % 8];
-          let finalVal = adjustedGray > threshold ? 255 : 0;
-          data[i] = finalVal;
-          data[i + 1] = finalVal;
-          data[i + 2] = finalVal;
-          data[i + 3] = 255;
-        }
-        return imageData;
-      }
-
-      function applyFilters() {
-        if (!originalFrameData) return;
-
-        const sliderVal = parseInt(thresholdSlider.value);
-        const w = originalFrameData.width;
-        const h = originalFrameData.height;
-
-        // Determine which filter to apply based on mode
-        let filterMode = currentMode;
-        // Winner uses stencil filter
-        if (filterMode === "winner") filterMode = "stencil";
-
-        let processedImageData;
-        if (filterMode === "stencil") {
-          processedImageData = applyStencilFilter(
-            originalFrameData,
-            w,
-            h,
-            sliderVal,
-          );
-        } else {
-          processedImageData = applyGrayscaleFilter(
-            originalFrameData,
-            w,
-            h,
-            sliderVal,
-          );
-        }
-
-        // Render to the plain receipt canvas (always update for print)
-        const ctx = receiptCanvas.getContext("2d");
-        receiptCanvas.width = w;
-        receiptCanvas.height = h;
-        ctx.putImageData(processedImageData, 0, 0);
-
-        // Render to the corresponding template canvas
-        renderTemplateComposite(currentMode, processedImageData);
-      }
-
-      function renderTemplateComposite(mode, processedImageData) {
-        const templateImg = templateImages[mode];
-        if (!templateImg) return;
-
-        const canvasMap = {
-          stencil: stencilTemplateCanvas,
-          grayscale: grayscaleTemplateCanvas,
-          winner: winnerTemplateCanvas,
-        };
-        const canvas = canvasMap[mode];
-        if (!canvas) return;
-
-        const TW = templateImg.naturalWidth; // 944
-        const TH = templateImg.naturalHeight; // 1535
-        canvas.width = TW;
-        canvas.height = TH;
-        const ctx = canvas.getContext("2d");
-
-        // Clear canvas
-        ctx.clearRect(0, 0, TW, TH);
-
-        // Get the photo region for this template
-        const region = templatePhotoRegions[mode];
-
-        // Create a temporary canvas with the processed photo
-        const tmpCanvas = document.createElement("canvas");
-        tmpCanvas.width = processedImageData.width;
-        tmpCanvas.height = processedImageData.height;
-        tmpCanvas.getContext("2d").putImageData(processedImageData, 0, 0);
-
-        // Draw photo into the placeholder region (object-cover style)
-        const photoW = processedImageData.width;
-        const photoH = processedImageData.height;
-        const regionRatio = region.w / region.h;
-        const photoRatio = photoW / photoH;
-
-        let sx = 0,
-          sy = 0,
-          sw = photoW,
-          sh = photoH;
-        if (photoRatio > regionRatio) {
-          // Photo is wider — crop sides
-          sw = photoH * regionRatio;
-          sx = (photoW - sw) / 2;
-        } else {
-          // Photo is taller — crop top/bottom
-          sh = photoW / regionRatio;
-          sy = (photoH - sh) / 2;
-        }
-
-        // Draw the template image first (as background)
-        ctx.drawImage(templateImg, 0, 0, TW, TH);
-
-        // Draw the photo on top into the placeholder region
-        ctx.drawImage(
-          tmpCanvas,
-          sx,
-          sy,
-          sw,
-          sh,
-          region.x,
-          region.y,
-          region.w,
-          region.h,
-        );
-
-        // Draw timestamps
-        const now = new Date();
-        const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-        const fullDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
-        const fullMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const dayName = days[now.getDay()];
-        const fullDayName = fullDays[now.getDay()];
-        const monthName = months[now.getMonth()];
-        const fullMonthName = fullMonths[now.getMonth()];
-        const dateNum = now.getDate();
-        const year = now.getFullYear();
-        const hours = now.getHours().toString().padStart(2, "0");
-        const mins = now.getMinutes().toString().padStart(2, "0");
-        const timeStr = `${hours}.${mins}`;
-
-        if (mode === "grayscale") {
-          // Top-left of photo area: "Date: Wednesday, 4 March 2026 // Hours: 13.12"
-          const tx = region.x + 28;
-          const ty = region.y + 56;
-
-          ctx.fillStyle = "white";
-          ctx.textBaseline = "alphabetic";
-
-          // "Date: " (small)
-          const labelDate = "Date: ";
-          ctx.font = "bold 22px 'Helvetica Neue', Helvetica, Arial, sans-serif";
-          let cx = tx;
-          ctx.fillText(labelDate, cx, ty);
-          cx += ctx.measureText(labelDate).width;
-
-          // "Wednesday, 4 March 2026" (larger)
-          const dateText = `${fullDayName}, ${dateNum} ${fullMonthName} ${year}`;
-          ctx.font = "bold 34px 'Helvetica Neue', Helvetica, Arial, sans-serif";
-          ctx.fillText(dateText, cx, ty);
-          cx += ctx.measureText(dateText).width;
-
-          // " // " separator
-          const sep = " // ";
-          ctx.font = "bold 34px 'Helvetica Neue', Helvetica, Arial, sans-serif";
-          ctx.fillText(sep, cx, ty);
-          cx += ctx.measureText(sep).width;
-
-          // "Hours: " (small)
-          const labelHours = "Hours: ";
-          ctx.font = "bold 22px 'Helvetica Neue', Helvetica, Arial, sans-serif";
-          ctx.fillText(labelHours, cx, ty);
-          cx += ctx.measureText(labelHours).width;
-
-          // "13.12" (larger)
-          ctx.font = "bold 34px 'Helvetica Neue', Helvetica, Arial, sans-serif";
-          ctx.fillText(timeStr, cx, ty);
-
-        } else if (mode === "winner") {
-          // Top-left & top-right of the FULL canvas bg
-          const pad = 40;
-          const boxH = 44;
-          const dateText = `date: ${dayName}, ${dateNum} ${monthName} ${year}`;
-          const timeText = `time: ${timeStr}`;
-
-          ctx.font = "bold 28px 'Helvetica Neue', Helvetica, Arial, sans-serif";
-          ctx.textBaseline = "middle";
-
-          // --- Date box (top-left) ---
-          const dm = ctx.measureText(dateText);
-          const dBoxW = dm.width + 24;
-          const dBoxX = pad;
-          const dBoxY = pad;
-          ctx.fillStyle = "black";
-          ctx.fillRect(dBoxX, dBoxY, dBoxW, boxH);
-          ctx.strokeStyle = "white";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(dBoxX, dBoxY, dBoxW, boxH);
-          ctx.fillStyle = "white";
-          ctx.fillText(dateText, dBoxX + 12, dBoxY + boxH / 2);
-
-          // --- Time box (top-right) ---
-          const tm = ctx.measureText(timeText);
-          const tBoxW = tm.width + 24;
-          const tBoxX = TW - tBoxW - pad;
-          const tBoxY = pad;
-          ctx.fillStyle = "black";
-          ctx.fillRect(tBoxX, tBoxY, tBoxW, boxH);
-          ctx.strokeStyle = "white";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(tBoxX, tBoxY, tBoxW, boxH);
-          ctx.fillStyle = "white";
-          ctx.fillText(timeText, tBoxX + 12, tBoxY + boxH / 2);
-
-        } else if (mode === "stencil") {
-          // Below the photo: date bottom-left, time bottom-right
-          const belowY = region.y + region.h + 36;
-          const dateText = `date: ${dayName}, ${dateNum} ${monthName} ${year}`;
-          const timeText = `time: ${timeStr}`;
-
-          ctx.font = "400 28px 'Helvetica Neue', Helvetica, Arial, sans-serif";
-          ctx.fillStyle = "black";
-          ctx.textBaseline = "alphabetic";
-
-          // Bottom-left
-          ctx.fillText(dateText, region.x, belowY);
-
-          // Bottom-right
-          const tm = ctx.measureText(timeText);
-          ctx.fillText(timeText, region.x + region.w - tm.width, belowY);
-        }
-      }
-
-      // Retake — go back to camera capture
-      btnRetake.addEventListener("click", async () => {
         // Show main footer
         const mainFooter = document.getElementById("mainFooter");
-        mainFooter.classList.remove("hidden");
+        if(mainFooter) mainFooter.classList.remove("hidden");
 
-        // Hide receipt and all template containers and buttons
-        receiptContainer.classList.add("hidden");
-        receiptContainer.classList.remove("flex");
-        stencilTemplateContainer.classList.add("hidden");
-        grayscaleTemplateContainer.classList.add("hidden");
-        winnerTemplateContainer.classList.add("hidden");
-        btnRow.classList.add("hidden");
-        document.getElementById("thresholdControl").classList.add("hidden");
-        thankYouMsg.classList.add("hidden");
-
-        // Reset body scroll
-        document.body.classList.add("overflow-hidden", "h-[100svh]");
-        document.body.classList.remove(
-          "overflow-y-auto",
-          "min-h-[100svh]",
-          "h-auto",
-        );
-
-        // Show video and capture button
-        videoContainer.classList.remove("hidden");
-        btnCapture.classList.remove("hidden");
-        btnCapture.classList.add("flex");
-        btnCapture.disabled = false;
-        btnCapture.textContent = "CAPTURE";
-
-        // Restart Pi preview
-        try {
-          const response = await fetch("/api/preview/start", { method: "POST" });
-          const result = await response.json();
-          if (result.success && result.stream_url) {
-            mjpegStream.src = result.stream_url + "?t=" + Date.now();
+        // Hide sections
+        const sections = ["resultSection", "selectionSection", "videoContainer"];
+        sections.forEach(id => {
+          const el = document.getElementById(id);
+          if(el) {
+            el.classList.add("hidden");
+            el.classList.remove("flex");
           }
-        } catch (e) {
-          console.error("Preview restart error:", e);
+        });
+
+        // Show start screen
+        if(imageContainer) imageContainer.classList.remove("hidden");
+        if(btnStart) {
+          btnStart.classList.remove("hidden");
+          btnStart.classList.add("flex");
+          btnStart.textContent = "START SNAP";
+          btnStart.disabled = false;
         }
-      });
+        
+        // Return canvas to storage
+        const storage = document.getElementById("canvasStorage");
+        const canvasCont = document.getElementById("stencilTemplateContainer");
+        if(storage && canvasCont) storage.appendChild(canvasCont);
+        
+        setActiveNav("start");
+      }
 
-      // Download image
-      btnDownload.addEventListener("click", () => {
-        let printCanvas = receiptCanvas;
-        if (currentMode === "stencil") printCanvas = stencilTemplateCanvas;
-        else if (currentMode === "grayscale") printCanvas = grayscaleTemplateCanvas;
-        else if (currentMode === "winner") printCanvas = winnerTemplateCanvas;
+      // Event Listeners for Reset
+      const homeBtn = document.getElementById("btnHome");
+      if (homeBtn) homeBtn.addEventListener("click", resetToHome);
+      
+      const selectionHomeBtn = document.getElementById("btnSelectionHome");
+      if (selectionHomeBtn) selectionHomeBtn.addEventListener("click", resetToHome);
 
-        const link = document.createElement("a");
-        link.download = `potboy-${currentMode}.png`;
-        link.href = printCanvas.toDataURL("image/png");
-        link.click();
-      });
+      document.getElementById("btnShareSelesai").addEventListener("click", resetToHome);
 
-      // Print receipt
-      btnPrint.addEventListener("click", async () => {
-        console.log("[PRINT] Button clicked");
-        btnPrint.disabled = true;
-        btnPrint.textContent = "Printing...";
-        if (ws && ws.readyState === 1)
-          ws.send(
-            JSON.stringify({ type: "log", msg: "[PRINT] Button clicked" }),
-          );
+      // Save image locally (Optional, if btnSave exists)
+      if (btnSave) {
+        btnSave.addEventListener("click", () => {
+          const link = document.createElement("a");
+          link.download = `seensoon-print.png`;
+          link.href = stencilTemplateCanvas.toDataURL("image/png");
+          link.click();
+        });
+      }
 
-        try {
-          // Use the active template canvas for printing
-          let printCanvas = receiptCanvas;
-          if (currentMode === "stencil") printCanvas = stencilTemplateCanvas;
-          else if (currentMode === "grayscale")
-            printCanvas = grayscaleTemplateCanvas;
-          else if (currentMode === "winner") printCanvas = winnerTemplateCanvas;
-          const dataUrl = printCanvas.toDataURL("image/png");
-
-          console.log("[PRINT] Sending to server, size:", dataUrl.length);
+      // Print receipt (Optional, if btnPrint exists)
+      if (btnPrint) {
+        btnPrint.addEventListener("click", async () => {
+          console.log("[PRINT] Button clicked");
+          btnPrint.disabled = true;
+          btnPrint.textContent = "Printing...";
           if (ws && ws.readyState === 1)
             ws.send(
-              JSON.stringify({
-                type: "log",
-                msg: "[PRINT] Sending to server, size: " + dataUrl.length,
-              }),
+              JSON.stringify({ type: "log", msg: "[PRINT] Button clicked" }),
             );
-          const response = await fetch("/api/print", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ image: dataUrl }),
-          });
-          console.log("[PRINT] Response:", response.status);
-          const result = await response.json();
 
-          if (result.success) {
-            btnRow.classList.add("hidden");
-            document.getElementById("thresholdControl").classList.add("hidden");
-            thankYouMsg.classList.remove("hidden");
-          } else {
+          try {
+            const dataUrl = stencilTemplateCanvas.toDataURL("image/png");
+
+            console.log("[PRINT] Sending to server, size:", dataUrl.length);
+            if (ws && ws.readyState === 1)
+              ws.send(
+                JSON.stringify({
+                  type: "log",
+                  msg: "[PRINT] Sending to server, size: " + dataUrl.length,
+                }),
+              );
+            const response = await fetch("/api/print", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ image: dataUrl }),
+            });
+            console.log("[PRINT] Response:", response.status);
+            const result = await response.json();
+
+            if (result.success) {
+              // Hide print UI or show success
+            } else {
+              btnPrint.textContent = "Print Failed";
+              btnPrint.disabled = false;
+              alert("Print error: " + result.error);
+            }
+          } catch (e) {
+            console.error("[PRINT] Error:", e);
             btnPrint.textContent = "Print Failed";
             btnPrint.disabled = false;
-            alert("Print error: " + result.error);
+            alert("Error: " + e.message);
           }
-        } catch (e) {
-          console.error("[PRINT] Error:", e);
-          btnPrint.textContent = "Print Failed";
-          btnPrint.disabled = false;
-          alert("Error: " + e.message);
-        }
-      });
+        });
+      }
     </script>
   </body>
 </html>
